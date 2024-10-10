@@ -1,6 +1,8 @@
 # Library for GUI
 import tkinter as tk
-
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import utils
 from importMenu import createImportMenu
 from editMenu import createEditMenu
@@ -21,6 +23,7 @@ theta_var = tk.DoubleVar()
 sampleFreq_var = tk.DoubleVar()
 freq_var = tk.DoubleVar()
 originalPoints = Wave("cos",1,0,1,1,1)
+editedPoints = Wave("cos",1,0,1,1,1)
 
 # Creating Canvases
 menuCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
@@ -30,6 +33,7 @@ menuCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0, rely = 0)
 originalWaveCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
 originalWaveCanvas.configure(bg="black")
 originalWaveCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0.5, rely = 0)
+originalWaveCanvas.create_line(0, originalWaveCanvas.winfo_height()/2, originalWaveCanvas.winfo_width(), originalWaveCanvas.winfo_height()/2, fill="green")
 
 editedWaveCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
 editedWaveCanvas.configure(bg="black")
@@ -38,9 +42,19 @@ editedWaveCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0.5, rely = 0.5)
 def generateClick():
     tempWave = Wave(type_var,amp_var,theta_var,sampleNum_var,sampleFreq_var,freq_var)
     originalPoints = utils.generatePoints(tempWave)
-    for x in range(len(originalPoints)):
+    editedPoints = originalPoints
+    for x in range(sampleNum_var.get()):
         print(f"{x}: {originalPoints[x]}")
-
+    x_ax = np.arange(sampleNum_var.get())
+    y_ax = originalPoints
+    fig,ax = plt.subplots()
+    ax.plot(x_ax,y_ax)
+    originalGraph = FigureCanvasTkAgg(fig, master = originalWaveCanvas)
+    editedGraph = FigureCanvasTkAgg(fig, master = editedWaveCanvas)
+    originalGraph.draw()
+    editedGraph.draw()
+    originalGraph.get_tk_widget().place(relwidth = 1, relheight = 0.9,relx = 0, rely = 0.1)
+    editedGraph.get_tk_widget().place(relwidth = 1, relheight = 0.9,relx = 0, rely = 0.1)
 def generateMenuClick():
     root.update()
     width = 0.5*root.winfo_width()
@@ -126,7 +140,6 @@ originalLabel.configure(fg="green", bg="black")
 
 editedLabel = tk.Label(editedWaveCanvas, text="Edited Wave:",highlightthickness=2,highlightbackground="green")
 editedLabel.configure(fg="green", bg="black")
-
 
 # Creating Buttons
 importButtonBorder = tk.Frame(menuCanvas, bd=0,highlightthickness=2,highlightcolor="green",highlightbackground="green")
