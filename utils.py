@@ -16,7 +16,8 @@ def generatePoints(wave):
         for x in range(wave.sampleNum.get()):
             insideCos = 0;
             if (wave.type.get() == "sin"):
-                insideCos = 0
+                insideInsideCos = (2 * np.pi * x * wave.freq.get()) / wave.sampleFreq.get()
+                insideCos = np.sin(insideInsideCos + np.radians(wave.theta.get()))
             elif (wave.type.get() == "cos"):
                 insideInsideCos = (2 * np.pi * x * wave.freq.get()) / wave.sampleFreq.get()
                 insideCos = np.cos(insideInsideCos + np.radians(wave.theta.get()))
