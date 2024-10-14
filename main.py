@@ -1,6 +1,7 @@
 # Library for GUI
 import tkinter as tk
 import matplotlib.pyplot as plt
+from matplotlib import style
 from tkinter import filedialog
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -31,7 +32,6 @@ def generatePoints(wave):
 # Creating and defining Root Window
 root = tk.Tk()
 root.title("Digital Signal Processing")
-root.iconbitmap("wave-sine.ico")
 root.minsize(1280, 720)
 root.configure(bg='black')
 
@@ -43,14 +43,15 @@ sampleNum_var = tk.IntVar()
 theta_var = tk.DoubleVar()
 sampleFreq_var = tk.DoubleVar()
 freq_var = tk.DoubleVar()
-originalSignalType = 0
-originalIsPeriodic = 0
+originalSignalType = False
+originalIsPeriodic = False
+originalFunctionString = tk.StringVar()
 
-
-originalPoints = Wave("cos",1,0,1,1,1)
-originalWave = Wave("cos",1,0,1,1,1)
-editedPoints = Wave("cos",1,0,1,1,1)
-editedWave = Wave("cos",1,0,1,1,1)
+plt.style.use("dark_background")
+originalPoints = "unedited"
+originalWave = "unedited"
+editedPoints = "unedited"
+editedWave = "unedited"
 
 # Creating Canvases
 menuCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
@@ -60,6 +61,8 @@ menuCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0, rely = 0)
 originalWaveCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
 originalWaveCanvas.configure(bg="black")
 originalWaveCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0.5, rely = 0)
+
+
 
 editedWaveCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
 editedWaveCanvas.configure(bg="black")
@@ -71,12 +74,16 @@ def originalExportClick():
 
 def importFromFile():
     if(file_var.get() != ""):
+        originalFunctionString.set(f"Imported from file")
+        originalFunctionLabel = tk.Label(originalWaveCanvas, text=originalFunctionString.get(), highlightthickness=2, highlightbackground="green")
+        originalFunctionLabel.configure(fg="green", bg="black")
+        originalFunctionLabel.place(relwidth= 0.5,relheight=0.1,relx= 0.25, rely=0)
         file = open(file_var.get())
-        originalSignalType = file.readline()
+        originalSignalType = bool(file.readline())
         print(f"Signal type: {originalSignalType}")
-        originalIsPeriodic = file.readline()
+        originalIsPeriodic = bool(file.readline())
         print(f"Periodic: {originalIsPeriodic}")
-        sampleNum_var.set(file.readline())
+        sampleNum_var.set(int(file.readline()))
         x_ax = [0]*sampleNum_var.get()
         originalPoints = [0]*sampleNum_var.get()
         for x in range(sampleNum_var.get()):
@@ -86,10 +93,11 @@ def importFromFile():
             originalPoints[x] = float(temp[1])
         y_ax = originalPoints
         fig, ax = plt.subplots()
-        ax.plot(x_ax, y_ax)
+        ax.plot(x_ax, y_ax,color="darkgreen")
         ax.set_title("Original Graph")
         ax.set_xlabel("Sample")
         ax.set_ylabel("Amplitude")
+
         originalGraph = FigureCanvasTkAgg(fig, master=originalWaveCanvas)
         originalGraph.draw()
         originalGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
@@ -127,6 +135,14 @@ def importMenuClick():
     return importCanvas
 
 def generateClick():
+    if type_var.get() == "sin":
+        originalFunctionString.set(f"{amp_var.get()} * Sin(((2π*{freq_var.get()})/{sampleFreq_var.get()})+{theta_var.get()})")
+    else:
+        originalFunctionString.set(f"{amp_var.get()} * Cos(((2π*{freq_var.get()})/{sampleFreq_var.get()})+{theta_var.get()})")
+    originalFunctionLabel = tk.Label(originalWaveCanvas, text=originalFunctionString.get(), highlightthickness=2, highlightbackground="green")
+    originalFunctionLabel.configure(fg="green", bg="black")
+    originalFunctionLabel.place(relwidth=0.5, relheight=0.1, relx=0.25, rely=0)
+
     originalWave = Wave(type_var,amp_var,theta_var,sampleNum_var,sampleFreq_var,freq_var)
     originalPoints = generatePoints(originalWave)
     x_ax = [0]*sampleNum_var.get()
@@ -135,7 +151,7 @@ def generateClick():
         x_ax[x] = x
     y_ax = originalPoints
     fig,ax = plt.subplots()
-    ax.plot(x_ax,y_ax)
+    ax.plot(x_ax,y_ax,color="darkgreen")
     ax.set_title("Original Graph")
     ax.set_xlabel("Sample")
     ax.set_ylabel("Amplitude")
@@ -209,6 +225,19 @@ def generateMenuClick():
     generateButton.place(relwidth=1, relheight=1, relx=0, rely=0)
     generateCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0, rely = 0.5)
 
+def editWaveClick():
+    x_ax = [0]*10
+    y_ax = [0]*10
+    for x in range(10):
+        x_ax[x] = x
+    fig,ax = plt.subplots()
+    ax.plot(x_ax,y_ax,color="darkgreen")
+    ax.set_title("WIP")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Amplitude")
+    editedGraph = FigureCanvasTkAgg(fig, master = editedWaveCanvas)
+    editedGraph.draw()
+    editedGraph.get_tk_widget().place(relwidth = 1, relheight = 0.9,relx = 0, rely = 0.1)
 def editMenuClick():
     width = 0.5 * root.winfo_width()
     height = 0.5 * root.winfo_height()
@@ -217,6 +246,12 @@ def editMenuClick():
     editLabel = tk.Label(editCanvas, text="Edit:", highlightthickness=2, highlightbackground="green")
     editLabel.configure(fg="green", bg="black")
     editLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    editWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    editWaveButton = tk.Button(editWaveButtonBorder, text="Edit Wave", command=editWaveClick, width='20')
+    editWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    editWaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.8)
+    editWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
     editCanvas.place(relwidth=0.5,relheight=0.5,relx=0,rely=0.5)
 
