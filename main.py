@@ -23,7 +23,9 @@ theta_var = tk.DoubleVar()
 sampleFreq_var = tk.DoubleVar()
 freq_var = tk.DoubleVar()
 originalPoints = Wave("cos",1,0,1,1,1)
+originalWave = Wave("cos",1,0,1,1,1)
 editedPoints = Wave("cos",1,0,1,1,1)
+editedWave = Wave("cos",1,0,1,1,1)
 
 # Creating Canvases
 menuCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,highlightbackground="green")
@@ -40,12 +42,12 @@ editedWaveCanvas.configure(bg="black")
 editedWaveCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0.5, rely = 0.5)
 
 def generateClick():
-    tempWave = Wave(type_var,amp_var,theta_var,sampleNum_var,sampleFreq_var,freq_var)
-    originalPoints = utils.generatePoints(tempWave)
-    editedPoints = originalPoints
+    originalWave = Wave(type_var,amp_var,theta_var,sampleNum_var,sampleFreq_var,freq_var)
+    originalPoints = utils.generatePoints(originalWave)
+    x_ax = [0]*sampleNum_var.get()
     for x in range(sampleNum_var.get()):
         print(f"{x}: {originalPoints[x]}")
-    x_ax = np.arange(sampleNum_var.get())
+        x_ax[x] = x
     y_ax = originalPoints
     fig,ax = plt.subplots()
     ax.plot(x_ax,y_ax)
@@ -54,7 +56,6 @@ def generateClick():
     originalGraph.draw()
     editedGraph.draw()
     originalGraph.get_tk_widget().place(relwidth = 1, relheight = 0.9,relx = 0, rely = 0.1)
-    editedGraph.get_tk_widget().place(relwidth = 1, relheight = 0.9,relx = 0, rely = 0.1)
 def generateMenuClick():
     root.update()
     width = 0.5*root.winfo_width()
