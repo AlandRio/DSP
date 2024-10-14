@@ -1,11 +1,5 @@
-from tkinter import *
+import tkinter as tk
+from tkinter import filedialog
 
-def importFromFile(filePath):
-    file = open(filePath)
+file_var = ""
 
-def createImportMenu(root):
-    width = 0.5*root.winfo_width()
-    height = 0.5*root.winfo_height()
-    importCanvas = Canvas(root, width=width,height=height,highlightthickness=2,highlightbackground="green")
-    importCanvas.configure(bg="black")
-    return importCanvas

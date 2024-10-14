@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6531b965-3ae2-4e7f-b96d-674e2942a71a" name="Changes" comment="added SIN to generate">
+    <list default="true" id="6531b965-3ae2-4e7f-b96d-674e2942a71a" name="Changes" comment="changed graph to be more digital">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/importMenu.py" beforeDir="false" afterPath="$PROJECT_DIR$/importMenu.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,7 +120,15 @@
       <option name="project" value="LOCAL" />
       <updated>1728577435013</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="changed graph to be more digital">
+      <option name="closed" value="true" />
+      <created>1728905086647</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1728905086647</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -138,6 +148,7 @@
     <MESSAGE value="Fully locked in template + generate menu" />
     <MESSAGE value="Generate Functionality" />
     <MESSAGE value="added SIN to generate" />
-    <option name="LAST_COMMIT_MESSAGE" value="added SIN to generate" />
+    <MESSAGE value="changed graph to be more digital" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed graph to be more digital" />
   </component>
 </project>

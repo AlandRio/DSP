@@ -1,10 +1,10 @@
 # Library for GUI
 import tkinter as tk
 import matplotlib.pyplot as plt
+from tkinter import filedialog
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import utils
-from importMenu import createImportMenu
 from editMenu import createEditMenu
 from utils import Wave
 
@@ -17,6 +17,7 @@ root.configure(bg='black')
 
 # Global Variable
 type_var = tk.StringVar()
+file_var = tk.StringVar()
 amp_var = tk.IntVar()
 sampleNum_var = tk.IntVar()
 theta_var = tk.DoubleVar()
@@ -41,6 +42,43 @@ editedWaveCanvas = tk.Canvas(root, width= 640 , height=360,highlightthickness=2,
 editedWaveCanvas.configure(bg="black")
 editedWaveCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0.5, rely = 0.5)
 
+
+
+def importFromFile():
+    file_var=""
+def browseClick():
+    file_var = filedialog.askopenfilename(title="Select a txt File",filetypes=[("Text files","*.txt")])
+
+def importMenuClick():
+    width = 0.5*root.winfo_width()
+    height = 0.5*root.winfo_height()
+    importCanvas = tk.Canvas(root, width=width,height=height,highlightthickness=2,highlightbackground="green")
+    importCanvas.configure(bg="black")
+    importLabel = tk.Label(importCanvas, text="Import:", highlightthickness=2, highlightbackground="green")
+    importLabel.configure(fg="green", bg="black")
+    importLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    fileLabel = tk.Label(importCanvas, text="File:")
+    fileLabel.configure(fg="green", bg="black")
+    fileLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.2)
+
+    fileEntry = tk.Entry(importCanvas, textvariable=file_var)
+    fileEntry.place(relwidth=0.6, relheight=0.1, relx=0.25, rely=0.2)
+
+    browseButtonBorder = tk.Frame(importCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    browseButton = tk.Button(browseButtonBorder, text="Browse", command=browseClick, width='20')
+    browseButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    browseButtonBorder.place(relwidth=0.1, relheight=0.1, relx=0.8, rely=0.2)
+    browseButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+    importButtonBorder = tk.Frame(importCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    importButton = tk.Button(importButtonBorder, text="Import", command=importFromFile, width='20')
+    importButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    importButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.8)
+    importButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+    importCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0, rely = 0.5)
+    return importCanvas
+
 def generateClick():
     originalWave = Wave(type_var,amp_var,theta_var,sampleNum_var,sampleFreq_var,freq_var)
     originalPoints = utils.generatePoints(originalWave)
@@ -51,10 +89,11 @@ def generateClick():
     y_ax = originalPoints
     fig,ax = plt.subplots()
     ax.plot(x_ax,y_ax)
+    ax.set_title("Original Graph")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Amplitude")
     originalGraph = FigureCanvasTkAgg(fig, master = originalWaveCanvas)
-    editedGraph = FigureCanvasTkAgg(fig, master = editedWaveCanvas)
     originalGraph.draw()
-    editedGraph.draw()
     originalGraph.get_tk_widget().place(relwidth = 1, relheight = 0.9,relx = 0, rely = 0.1)
 def generateMenuClick():
     root.update()
@@ -67,11 +106,11 @@ def generateMenuClick():
     generateLabel.configure(fg="green", bg="black")
     generateLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
-    typeLabel = tk.Label(generateCanvas, text="Check for Cos():")
+    typeLabel = tk.Label(generateCanvas, text="Sin():")
     typeLabel.configure(fg="green", bg="black")
     typeLabel.place(relwidth=0.2, relheight=0.1, relx=0.1, rely=0.1)
 
-    typeCheck = tk.Checkbutton(generateCanvas, variable= type_var,onvalue="cos",offvalue="sin",bg="black")
+    typeCheck = tk.Checkbutton(generateCanvas, variable= type_var,onvalue="sin",offvalue="cos",bg="black")
     typeCheck.place(relwidth=0.1,relheight=0.1,relx=0.3,rely=0.1)
 
 
@@ -123,10 +162,6 @@ def generateMenuClick():
     generateButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.8)
     generateButton.place(relwidth=1, relheight=1, relx=0, rely=0)
     generateCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0, rely = 0.5)
-
-def importMenuClick():
-    importCanvas = createImportMenu(root)
-    importCanvas.place(relwidth = 0.5, relheight = 0.5,relx = 0, rely = 0.5)
 
 def editMenuClick():
     editCanvas = createEditMenu(root)
