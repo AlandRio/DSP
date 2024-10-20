@@ -46,6 +46,7 @@ theta_var = tk.DoubleVar()
 sampleFreq_var = tk.DoubleVar()
 freq_var = tk.DoubleVar()
 originalFunctionString = tk.StringVar()
+line_var = tk.StringVar()
 
 # Defining Global Objects for Original Graph and Edited Graph
 originalPoints = Points()
@@ -353,14 +354,14 @@ def addSubEditWave(type="add"):
     global postEditPoints
     minimum_point = min(min(editedPoints.x_points), min(originalPoints.x_points))
     maximum_point = max(max(editedPoints.x_points), max(originalPoints.x_points))
-    total_samples = int(maximum_point - minimum_point)
+    total_samples = int(maximum_point - minimum_point) + 1
     print(f"total: {total_samples}")
-    postEditPoints.x_points = [0]*total_samples
-    postEditPoints.y_points = [0]*total_samples
+    postEditPoints.x_points = [0] * total_samples
+    postEditPoints.y_points = [0] * total_samples
     i = minimum_point
     x = 0
     z = 0
-    while i <= maximum_point + 1:
+    while i <= maximum_point:
         flag_found = 0
         for y in range(total_samples):
             try:
@@ -398,8 +399,8 @@ def addSubEditWave(type="add"):
         shown_samples = maximum_point - shown_samples
     else:
         shown_samples = 40
-    shownPoints_X = [0]*shown_samples
-    shownPoints_Y = [0]*shown_samples
+    shownPoints_X = [0] * shown_samples
+    shownPoints_Y = [0] * shown_samples
 
     i = 0
     if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
@@ -408,10 +409,8 @@ def addSubEditWave(type="add"):
         try:
             shownPoints_X[x] = postEditPoints.x_points[i + x]
             shownPoints_Y[x] = postEditPoints.y_points[i + x]
-        except:
+        except IndexError:
             break
-    for x in range(shown_samples):
-        print("h")
     fig, ax = plt.subplots()
     ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
     ax.set_title("Edited Wave")
@@ -533,47 +532,105 @@ def editAddClick():
     editAddCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
     return
 
-
-def editMulClick():
-    editMulCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
-                              highlightbackground="green")
-    editMulCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
-    return
-
-
-def editSqrClick():
-    editSqrCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
-                              highlightbackground="green")
-    editSqrCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
-    return
-
-
-def editNormClick():
-    editNormCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
-                               highlightbackground="green")
-    editNormCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
-    return
-
-
-def editSumClick():
-    editSumCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
-                              highlightbackground="green")
-    editSumCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
-    return
-
-
-def editWaveClick():
-    global editedPoints
-    x_points = editedPoints.x_points
-    y_points = editedPoints.y_points
+def mulClick():
+    global postEditPoints
+    postEditPoints.samples = len(originalPoints.x_points)
+    postEditPoints.x_points = [0] * postEditPoints.samples
+    postEditPoints.y_points = [0] * postEditPoints.samples
+    for x in range(postEditPoints.samples):
+        postEditPoints.x_points[x] = (originalPoints.x_points[x])
+        postEditPoints.y_points[x] = (originalPoints.y_points[x] * amp_var.get())
+    shownPoints_X = [0] * 40
+    shownPoints_Y = [0] * 40
+    i = 0
+    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
+        i = postEditPoints.x_points.index(startingPos_var.get())
+    for x in range(40):
+        try:
+            shownPoints_X[x] = postEditPoints.x_points[i + x]
+            shownPoints_Y[x] = postEditPoints.y_points[i + x]
+        except IndexError:
+            break
     fig, ax = plt.subplots()
-    ax.plot(x_points, y_points, color="darkgreen")
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
     ax.set_title("Edited Wave")
     ax.set_xlabel("Sample")
     ax.set_ylabel("Amplitude")
     editedGraph = FigureCanvasTkAgg(fig, master=editedWaveCanvas)
     editedGraph.draw()
     editedGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
+    return
+def editMulClick():
+    editMulCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
+
+    mulLabel = tk.Label(editMulCanvas, text="Multiply:", highlightthickness=2, highlightbackground="green")
+    mulLabel.configure(fg="green", bg="black")
+    mulLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    ampLabel = tk.Label(editMulCanvas, text="Multiply by:")
+    ampLabel.configure(fg="green", bg="black")
+    ampLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.3)
+
+    ampEntry = tk.Entry(editMulCanvas, textvariable=amp_var)
+    ampEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
+
+    posLabel = tk.Label(editMulCanvas, text="Starting Pos:")
+    posLabel.configure(fg="green", bg="black")
+    posLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.2)
+
+    posEntry = tk.Entry(editMulCanvas, textvariable=startingPos_var)
+    posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.2)
+
+    mulWaveButtonBorder = tk.Frame(editMulCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
+    mulWaveButton = tk.Button(mulWaveButtonBorder, text="MULTIPLY", command=mulClick, width='20')
+    mulWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    mulWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.4, rely=0.7)
+    mulWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+    editMulCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
+    return
+
+def sqrClick():
+    return
+def editSqrClick():
+    editSqrCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
+
+    sqrLabel = tk.Label(editSqrCanvas, text="Square:", highlightthickness=2, highlightbackground="green")
+    sqrLabel.configure(fg="green", bg="black")
+    sqrLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    editSqrCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
+    return
+
+def normClick():
+    return
+def editNormClick():
+    editNormCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                               highlightbackground="green")
+
+    normLabel = tk.Label(editNormCanvas, text="Normalize:", highlightthickness=2, highlightbackground="green")
+    normLabel.configure(fg="green", bg="black")
+    normLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+
+    editNormCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
+    return
+
+def sumClick():
+    return
+def editSumClick():
+    editSumCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
+
+    sumLabel = tk.Label(editSumCanvas, text="Accumulate:", highlightthickness=2, highlightbackground="green")
+    sumLabel.configure(fg="green", bg="black")
+    sumLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    editSumCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
+    return
 
 
 def editMenuClick():
@@ -629,52 +686,172 @@ def editMenuClick():
     editCanvas.place(relwidth=0.5, relheight=0.5, relx=0, rely=0.5)
 
 
+def SignalSamplesAreEqual(compare_type="edited"):
+    file_name = file_var.get()
+    samples = []
+    if compare_type == "edited":
+        samples = postEditPoints.y_points
+    elif compare_type == "original":
+        samples = originalPoints.y_points
+    else:
+        return
+    expected_indices = []
+    expected_samples = []
+    with open(file_name, 'r') as f:
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        while line:
+            # process line
+            L = line.strip()
+            if len(L.split(' ')) == 2:
+                L = line.split(' ')
+                V1 = int(L[0])
+                V2 = float(L[1])
+                expected_indices.append(V1)
+                expected_samples.append(V2)
+                line = f.readline()
+            else:
+                break
+
+    test_failed = 0
+    if len(expected_samples) != len(samples):
+        line_var.set("Test case failed, your signal have different length from the expected one")
+        print("Test case failed, your signal have different values from the expected one1")
+        test_failed = 1
+    for i in range(len(expected_samples)):
+        if abs(samples[i] - expected_samples[i]) < 0.01:
+            continue
+        else:
+            line_var.set("Test case failed, your signal have different values from the expected one")
+            print("Test case failed, your signal have different values from the expected one2")
+            test_failed = 1
+
+    if test_failed == 0:
+        line_var.set("Test case passed successfully")
+        print("Test case passed successfully")
+
+    # creates a label for the note
+    noteLabel = tk.Label(root, text=line_var.get())
+    noteLabel.configure(fg="green", bg="black")
+    noteLabel.place(relwidth=0.4, relheight=0.05, relx=0.05, rely=0.55)
+
+
+def compareOriginalClick():
+    SignalSamplesAreEqual("original")
+    return
+
+
+def compareEditedClick():
+    SignalSamplesAreEqual("edited")
+    return
+
+
+def compareMenuClick():
+    width = 0.5 * root.winfo_width()  # gets size of window
+    height = 0.5 * root.winfo_height()  # gets size of window
+    # creates a canvas for edit menu
+    compareCanvas = tk.Canvas(root, width=width, height=height, highlightthickness=2, highlightbackground="green")
+    compareCanvas.configure(bg="black")
+
+    compareLabel = tk.Label(compareCanvas, text="Compare:", highlightthickness=2, highlightbackground="green")
+    compareLabel.configure(fg="green", bg="black")
+    compareLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+
+    # creates a label beside the file input
+    fileLabel = tk.Label(compareCanvas, text="File:")
+    fileLabel.configure(fg="green", bg="black")
+    fileLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.2)
+
+    # creates an input field for the file path which is stored in file_var
+    fileEntry = tk.Entry(compareCanvas, textvariable=file_var)
+    fileEntry.place(relwidth=0.6, relheight=0.1, relx=0.25, rely=0.2)
+
+    browseButtonBorder = tk.Frame(compareCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                      highlightbackground="green")
+    browseButton = tk.Button(browseButtonBorder, text="Browse", command=browseClick, width='20')
+    browseButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    browseButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.45, rely=0.4)
+    browseButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+    compareOriginalButtonBorder = tk.Frame(compareCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                      highlightbackground="green")
+    compareOriginalButton = tk.Button(compareOriginalButtonBorder, text="Compare OG", command=compareOriginalClick, width='20')
+    compareOriginalButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    compareOriginalButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.4)
+    compareOriginalButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+    compareEditedButtonBorder = tk.Frame(compareCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                      highlightbackground="green")
+    compareEditedButton = tk.Button(compareEditedButtonBorder, text="Compare ED", command=compareEditedClick, width='20')
+    compareEditedButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    compareEditedButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.65, rely=0.4)
+    compareEditedButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+    compareCanvas.place(relwidth=0.5, relheight=0.5, relx=0, rely=0.5)
+
+
+    return
+
+
 # Creating Label
 menuName = tk.Label(menuCanvas, text="DSP - Section 1")
 menuName.configure(fg="green", bg="black", highlightthickness=2, highlightbackground="green")
-
+menuName.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 originalLabel = tk.Label(originalWaveCanvas, text="Original Wave:", highlightthickness=2, highlightbackground="green")
 originalLabel.configure(fg="green", bg="black")
+originalLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
 editedLabel = tk.Label(editedWaveCanvas, text="Edited Wave:", highlightthickness=2, highlightbackground="green")
 editedLabel.configure(fg="green", bg="black")
+editedLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
 # Creating Buttons
 importButtonBorder = tk.Frame(menuCanvas, bd=0, highlightthickness=2, highlightcolor="green",
                               highlightbackground="green")
 importButton = tk.Button(importButtonBorder, text="Import", command=importMenuClick, width='20')
 importButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+importButtonBorder.place(relwidth=0.25, relheight=0.2, relx=0, rely=0.2)
+importButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 generateButtonBorder = tk.Frame(menuCanvas, bd=0, highlightthickness=2, highlightcolor="green",
                                 highlightbackground="green")
 generateButton = tk.Button(generateButtonBorder, text="Generate", command=generateMenuClick, width='20', )
 generateButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+generateButtonBorder.place(relwidth=0.25, relheight=0.2, relx=0, rely=0.4)
+generateButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 exportOriginalButtonBorder = tk.Frame(originalWaveCanvas, bd=0, highlightthickness=2, highlightcolor="green",
                                       highlightbackground="green")
 exportOriginalButton = tk.Button(exportOriginalButtonBorder, text="Export", command=originalExportClick, width='20')
 exportOriginalButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+exportOriginalButtonBorder.place(relwidth=0.25, relheight=0.1, relx=0.75, rely=0)
+exportOriginalButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+exportEditedButtonBorder = tk.Frame(editedWaveCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                    highlightbackground="green")
+exportEditedButton = tk.Button(exportEditedButtonBorder, text="Export", command=originalExportClick, width='20')
+exportEditedButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+exportEditedButtonBorder.place(relwidth=0.25, relheight=0.1, relx=0.75, rely=0)
+exportEditedButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 editButtonBorder = tk.Frame(menuCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
 editButton = tk.Button(editButtonBorder, text="Edit", command=editMenuClick, width='20')
 editButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+editButtonBorder.place(relwidth=0.25, relheight=0.2, relx=0, rely=0.6)
+editButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+compareButtonBorder = tk.Frame(menuCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                               highlightbackground="green")
+compareButton = tk.Button(compareButtonBorder, text="Compare", command=compareMenuClick, width='20')
+compareButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+compareButtonBorder.place(relwidth=0.25, relheight=0.2, relx=0, rely=0.8)
+compareButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 # Putting content on screen
-menuName.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
-originalLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
-editedLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
-importButtonBorder.place(relwidth=0.25, relheight=0.25, relx=0, rely=0.25)
-importButton.place(relwidth=1, relheight=1, relx=0, rely=0)
-
-generateButtonBorder.place(relwidth=0.25, relheight=0.25, relx=0, rely=0.5)
-generateButton.place(relwidth=1, relheight=1, relx=0, rely=0)
-
-exportOriginalButtonBorder.place(relwidth=0.25, relheight=0.1, relx=0.75, rely=0)
-exportOriginalButton.place(relwidth=1, relheight=1, relx=0, rely=0)
-
-editButtonBorder.place(relwidth=0.25, relheight=0.25, relx=0, rely=0.75)
-editButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 # causes app to start and enter a while loop while it is on
 root.mainloop()
