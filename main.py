@@ -570,17 +570,17 @@ def editMulClick():
 
     ampLabel = tk.Label(editMulCanvas, text="Multiply by:")
     ampLabel.configure(fg="green", bg="black")
-    ampLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.3)
+    ampLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.4)
 
     ampEntry = tk.Entry(editMulCanvas, textvariable=amp_var)
-    ampEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
+    ampEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.4)
 
     posLabel = tk.Label(editMulCanvas, text="Starting Pos:")
     posLabel.configure(fg="green", bg="black")
-    posLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.2)
+    posLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.3)
 
     posEntry = tk.Entry(editMulCanvas, textvariable=startingPos_var)
-    posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.2)
+    posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
 
     mulWaveButtonBorder = tk.Frame(editMulCanvas, bd=0, highlightthickness=2, highlightcolor="green",
                                    highlightbackground="green")
@@ -593,6 +593,32 @@ def editMulClick():
     return
 
 def sqrClick():
+    global postEditPoints
+    postEditPoints.samples = len(originalPoints.x_points)
+    postEditPoints.x_points = [0] * postEditPoints.samples
+    postEditPoints.y_points = [0] * postEditPoints.samples
+    for x in range(postEditPoints.samples):
+        postEditPoints.x_points[x] = (originalPoints.x_points[x])
+        postEditPoints.y_points[x] = (originalPoints.y_points[x] * originalPoints.y_points[x])
+    shownPoints_X = [0] * 40
+    shownPoints_Y = [0] * 40
+    i = 0
+    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
+        i = postEditPoints.x_points.index(startingPos_var.get())
+    for x in range(40):
+        try:
+            shownPoints_X[x] = postEditPoints.x_points[i + x]
+            shownPoints_Y[x] = postEditPoints.y_points[i + x]
+        except IndexError:
+            break
+    fig, ax = plt.subplots()
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
+    ax.set_title("Edited Wave")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Amplitude")
+    editedGraph = FigureCanvasTkAgg(fig, master=editedWaveCanvas)
+    editedGraph.draw()
+    editedGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
     return
 def editSqrClick():
     editSqrCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
@@ -601,6 +627,21 @@ def editSqrClick():
     sqrLabel = tk.Label(editSqrCanvas, text="Square:", highlightthickness=2, highlightbackground="green")
     sqrLabel.configure(fg="green", bg="black")
     sqrLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    posLabel = tk.Label(editSqrCanvas, text="Starting Pos:")
+    posLabel.configure(fg="green", bg="black")
+    posLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.3)
+
+    posEntry = tk.Entry(editSqrCanvas, textvariable=startingPos_var)
+
+    posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
+
+    mulWaveButtonBorder = tk.Frame(editSqrCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
+    mulWaveButton = tk.Button(mulWaveButtonBorder, text="SQUARE", command=sqrClick, width='20')
+    mulWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    mulWaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.6)
+    mulWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
     editSqrCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
     return
