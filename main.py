@@ -69,11 +69,6 @@ editedWaveCanvas.configure(bg="black")
 editedWaveCanvas.place(relwidth=0.5, relheight=0.5, relx=0.5, rely=0.5)
 
 
-# Placeholder function for exporting (not task 2)
-def originalExportClick():
-    print("export")
-
-
 def importFile():
     if (file_var.get() != ""):  # so the user can not give an empty path
         tempPoints = Points()
@@ -646,7 +641,47 @@ def editSqrClick():
     editSqrCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
     return
 
-def normClick():
+
+def normWave(type = "-1"):
+    global postEditPoints
+    postEditPoints.samples = len(originalPoints.x_points)
+    postEditPoints.x_points = [0] * postEditPoints.samples
+    postEditPoints.y_points = [0] * postEditPoints.samples
+    max_point = max(originalPoints.y_points)
+    min_point = min(originalPoints.y_points)
+    for x in range(postEditPoints.samples):
+        postEditPoints.x_points[x] = (originalPoints.x_points[x])
+        fraction = (originalPoints.y_points[x] - min_point) / (max_point - min_point)
+        if type == "0":
+            postEditPoints.y_points[x] = fraction
+        elif type == "-1":
+            postEditPoints.y_points[x] = 2 * fraction - 1
+    shownPoints_X = [0] * 40
+    shownPoints_Y = [0] * 40
+    i = 0
+    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
+        i = postEditPoints.x_points.index(startingPos_var.get())
+    for x in range(40):
+        try:
+            shownPoints_X[x] = postEditPoints.x_points[i + x]
+            shownPoints_Y[x] = postEditPoints.y_points[i + x]
+        except IndexError:
+            break
+    fig, ax = plt.subplots()
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
+    ax.set_title("Edited Wave")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Amplitude")
+    editedGraph = FigureCanvasTkAgg(fig, master=editedWaveCanvas)
+    editedGraph.draw()
+    editedGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
+    return
+def norm1Click():
+    normWave("-1")
+    return
+
+def norm0Click():
+    normWave("0")
     return
 def editNormClick():
     editNormCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
@@ -655,6 +690,28 @@ def editNormClick():
     normLabel = tk.Label(editNormCanvas, text="Normalize:", highlightthickness=2, highlightbackground="green")
     normLabel.configure(fg="green", bg="black")
     normLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    posLabel = tk.Label(editNormCanvas, text="Starting Pos:")
+    posLabel.configure(fg="green", bg="black")
+    posLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.3)
+
+    posEntry = tk.Entry(editNormCanvas, textvariable=startingPos_var)
+
+    posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
+
+    norm1WaveButtonBorder = tk.Frame(editNormCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
+    norm1WaveButton = tk.Button(norm1WaveButtonBorder, text="-1 to 1", command=norm1Click, width='20')
+    norm1WaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    norm1WaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.6, rely=0.6)
+    norm1WaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+
+    norm0WaveButtonBorder = tk.Frame(editNormCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
+    norm0WaveButton = tk.Button(norm0WaveButtonBorder, text="0 to 1", command=norm0Click, width='20')
+    norm0WaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    norm0WaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.2, rely=0.6)
+    norm0WaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 
     editNormCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
@@ -884,8 +941,30 @@ def compareMenuClick():
 
     compareCanvas.place(relwidth=0.5, relheight=0.5, relx=0, rely=0.5)
 
-
     return
+
+def fileExport(type = "original"):
+    path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+    file = open(path, "w")
+    saved_points = Points
+    if type == "original":
+        saved_points = originalPoints
+    elif type == "edited":
+        saved_points = editedPoints
+    else:
+        return
+    string = f"{saved_points.signalType}\n{saved_points.isPeriodic}\n{saved_points.samples}"
+    for x in range(saved_points.samples):
+        string = string + f"\n{int(originalPoints.x_points[x])} {originalPoints.y_points[x]}"
+    file.write(string)
+
+def originalExportClick():
+    fileExport("original")
+    print("export")
+
+def editedExportClick():
+    fileExport("edited")
+    print("export")
 
 
 # Creating Label
@@ -924,7 +1003,7 @@ exportOriginalButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 exportEditedButtonBorder = tk.Frame(editedWaveCanvas, bd=0, highlightthickness=2, highlightcolor="green",
                                     highlightbackground="green")
-exportEditedButton = tk.Button(exportEditedButtonBorder, text="Export", command=originalExportClick, width='20')
+exportEditedButton = tk.Button(exportEditedButtonBorder, text="Export", command=editedExportClick, width='20')
 exportEditedButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
 exportEditedButtonBorder.place(relwidth=0.25, relheight=0.1, relx=0.75, rely=0)
 exportEditedButton.place(relwidth=1, relheight=1, relx=0, rely=0)
