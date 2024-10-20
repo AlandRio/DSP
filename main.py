@@ -17,11 +17,12 @@ class Wave:  # class for wave used in generate
 
 
 class Points:  # class for storing points
-    def __init__(self, x_points = range(40), y_points = [0]*40, signalType=0, isPeriodic=1): # intializes class with default arguments
+    def __init__(self, x_points = range(40), y_points = [0]*40, signalType=0, isPeriodic=1, samples = 40): # intializes class with default arguments
         self.x_points = x_points # Points on the X-Axis
         self.y_points = y_points # Points on the Y-Axis
         self.signalType = signalType # Wither the signal is Time (0) or Frequency (1)
         self.isPeriodic = isPeriodic # Wither the signal is Non-Periodic (0) or Periodic (1)
+        self.samples = samples
 
 
 
@@ -81,43 +82,19 @@ def importFile():
         print(f"Periodic: {originalIsPeriodic}") # Prints for debugging purposes
         # takes the 3rd line of the file which is number of samples
         samples = int(file.readline())
-        x_ax = [0] * 40 # initializes an empty array with size 40
-        y_ax = [0] * 40 # initializes an empty array with size 40
+        x_ax = [0] * samples # initializes an empty array with size samples
+        y_ax = [0] * samples # initializes an empty array with size samples
         i = 0 # variable used in the while loop incase loop does not find starting position
-
-        if samples > 40: # if there are more than 40 samples
-            if startingPos_var.get() < samples - 40: # if the starting position would result in less than 40 samples
-                while True:
-                    i += 1 # increments i to approach the number of samples
-                    # if i becomes larger than number of samples then stops the while loop
-                    if(i > samples):
-                        break
-                    # Reads the next line of the file which should look like x y
-                    # The split puts x in temp[0] and y in temp[1]
-                    temp = file.readline().split(" ")
-                    print(f"{startingPos_var.get()}: {temp[0]} and {temp[1]}") # prints for debugging purposes
-                    if int(temp[0]) == startingPos_var.get(): # if the starting position is found
-                        x_ax[0] = float(temp[0]) #puts the starting position X in index 0 of X-Axis
-                        y_ax[0] = float(temp[1]) #puts the starting position Y in index 0 of Y-Axis
-                        break
-
-                # puts the 39 points left starting from the index after the starting position
-                for x in range(40):
-                    if x != 0:
-                        temp = file.readline().split(" ")
-                        x_ax[x] = float(temp[0])
-                        y_ax[x] = float(temp[1])
-                        print(f"{temp[0]} and {temp[1]}")
-        else: # if there are less than 40 samples then prints all samples
-            for x in range(samples):
-                temp = file.readline().split(" ")
-                print(f"{temp[0]} and {temp[1]}")
-                x_ax[x] = float(temp[0])
-                y_ax[x] = float(temp[1])
+        for x in range(samples):
+            temp = file.readline().split(" ")
+            print(f"{temp[0]} and {temp[1]}")
+            x_ax[x] = float(temp[0])
+            y_ax[x] = float(temp[1])
         tempPoints.y_points = y_ax # puts y-axis points inside the global original points variable
         tempPoints.x_points = x_ax # puts x axis points inside the global original points variable
         tempPoints.isPeriodic = originalIsPeriodic # puts periodic flag inside the global original points variable
         tempPoints.signalType = originalSignalType # puts signaltype flag inside the global original points variable
+        tempPoints.samples = samples
         return tempPoints
 
 
@@ -133,10 +110,29 @@ def importFromFile():
 
     global  originalPoints
     originalPoints = importFile()
+    samplesShown = 0
+    if (originalPoints.x_points[0] > startingPos_var.get() or originalPoints.x_points[originalPoints.samples - 1] > startingPos_var.get()):
+        if (originalPoints.samples - abs(startingPos_var.get()) < 40):
+            samplesShown = originalPoints.samples - abs(startingPos_var.get())
+        else:
+            samplesShown = 40
+    shownPoints_X = [0]*samplesShown
+    shownPoints_Y = [0]*samplesShown
+    i = 0
+    if (startingPos_var.get() >= shownPoints_X[0]):
+        i = startingPos_var.get()
+    else:
+        i = shownPoints_X[0]
+    for x in range(40):
+        try:
+            shownPoints_X[x] = originalPoints.x_points[i + x]
+            shownPoints_Y[x] = originalPoints.y_points[i + x]
+        except:
+            break
 
     fig,ax = plt.subplots()
     # takes X axis points and Y axis points and plots them on a graph with a darkgreen line
-    ax.plot(originalPoints.x_points, originalPoints.y_points, color="darkgreen")
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
     ax.set_title("Original Graph")  # Self-explanatory
     if (originalPoints.signalType == 1):  # if the signal type is 1 will replace time with frequency on the x axis
         ax.set_xlabel("Frequency")
@@ -331,18 +327,39 @@ def generateMenuClick():
 
 def generateEditedWaveClick():
     global editedPoints
-    x_points = editedPoints.x_points
-    y_points = editedPoints.y_points
+    global editedWave
+    editedWave = Wave(type_var.get(),amp_var.get(),theta_var.get(),sampleFreq_var.get(),freq_var.get())
+    editedPoints = generatePoints(editedWave, startingPos_var.get())
+    editedPoints.x_points = editedPoints.x_points
+    editedPoints.y_points = editedPoints.y_points
+def addWaveClick():
+    global editedPoints
+    global originalPoints
+    addedPoints_X = [0]*40
+    addedPoints_Y = [0]*40
+    if (editedPoints.samples + originalPoints.samples >= 40):
+        for x in range(40):
+            x = 1
+    else:
+        addedPoints_X = [0] * editedPoints.samples
+        addedPoints_Y = [0] * editedPoints.samples
+        for x in range(editedPoints.samples + originalPoints.samples):
+            if(editedPoints.x_points[x] == originalPoints.x_points[x]):
+                addedPoints_X[x] = originalPoints.x_points[x]
+                addedPoints_Y[x] = originalPoints.y_points[x] + editedPoints.x_points[x]
+            else:
+                addedPoints_X[x] = 1
+
+
+
     fig, ax = plt.subplots()
-    ax.plot(x_points, y_points, color="darkgreen")
+    ax.plot(editedPoints.x_points, editedPoints.y_points, color="darkgreen")
     ax.set_title("Edited Wave")
     ax.set_xlabel("Sample")
     ax.set_ylabel("Amplitude")
     editedGraph = FigureCanvasTkAgg(fig, master=editedWaveCanvas)
     editedGraph.draw()
     editedGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
-    return
-def addWaveClick():
     return
 def subWaveClick():
     return
