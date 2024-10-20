@@ -8,22 +8,23 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class Wave:  # class for wave used in generate
-    def __init__(self, trigFunc = "cos", amp = 1, theta = 0.0, sampleFreq = 2.0, freq= 1.0):  # intializes class with default arguments
-        self.trigFunc = trigFunc # Wither the function is sin or cos
-        self.amp = amp # Amplitude
-        self.theta = theta # Phase shift
-        self.sampleFreq = sampleFreq # Sample Frequency
-        self.freq = freq # Frequency
+    def __init__(self, trigFunc="cos", amp=1, theta=0.0, sampleFreq=2.0,
+                 freq=1.0):  # intializes class with default arguments
+        self.trigFunc = trigFunc  # Wither the function is sin or cos
+        self.amp = amp  # Amplitude
+        self.theta = theta  # Phase shift
+        self.sampleFreq = sampleFreq  # Sample Frequency
+        self.freq = freq  # Frequency
 
 
 class Points:  # class for storing points
-    def __init__(self, x_points = range(40), y_points = [0]*40, signalType=0, isPeriodic=1, samples = 40): # intializes class with default arguments
-        self.x_points = x_points # Points on the X-Axis
-        self.y_points = y_points # Points on the Y-Axis
-        self.signalType = signalType # Wither the signal is Time (0) or Frequency (1)
-        self.isPeriodic = isPeriodic # Wither the signal is Non-Periodic (0) or Periodic (1)
+    def __init__(self, x_points=range(40), y_points=[0] * 40, signalType=0, isPeriodic=1,
+                 samples=40):  # intializes class with default arguments
+        self.x_points = x_points  # Points on the X-Axis
+        self.y_points = y_points  # Points on the Y-Axis
+        self.signalType = signalType  # Wither the signal is Time (0) or Frequency (1)
+        self.isPeriodic = isPeriodic  # Wither the signal is Non-Periodic (0) or Periodic (1)
         self.samples = samples
-
 
 
 # Creating and defining Root Window for the app
@@ -51,6 +52,7 @@ originalPoints = Points()
 originalWave = Wave()
 editedPoints = Points()
 editedWave = Wave()
+postEditPoints = Points()
 
 # Creating Canvases then configuring its background then placing it on the window
 menuCanvas = tk.Canvas(root, width=640, height=360, highlightthickness=2, highlightbackground="green")
@@ -65,35 +67,37 @@ editedWaveCanvas = tk.Canvas(root, width=640, height=360, highlightthickness=2, 
 editedWaveCanvas.configure(bg="black")
 editedWaveCanvas.place(relwidth=0.5, relheight=0.5, relx=0.5, rely=0.5)
 
+
 # Placeholder function for exporting (not task 2)
 def originalExportClick():
     print("export")
 
+
 def importFile():
-    if (file_var.get() != ""): # so the user can not give an empty path
+    if (file_var.get() != ""):  # so the user can not give an empty path
         tempPoints = Points()
         # Opens file using the path user gave
         file = open(file_var.get())
         # takes the 1st line of the file which is SignalType
         originalSignalType = bool(file.readline())
-        print(f"Signal type: {originalSignalType}") # Prints for debugging purposes
+        print(f"Signal type: {originalSignalType}")  # Prints for debugging purposes
         # takes the 2nd line of the file which is isPeriodic
         originalIsPeriodic = bool(file.readline())
-        print(f"Periodic: {originalIsPeriodic}") # Prints for debugging purposes
+        print(f"Periodic: {originalIsPeriodic}")  # Prints for debugging purposes
         # takes the 3rd line of the file which is number of samples
         samples = int(file.readline())
-        x_ax = [0] * samples # initializes an empty array with size samples
-        y_ax = [0] * samples # initializes an empty array with size samples
-        i = 0 # variable used in the while loop incase loop does not find starting position
+        x_ax = [0] * samples  # initializes an empty array with size samples
+        y_ax = [0] * samples  # initializes an empty array with size samples
+        i = 0  # variable used in the while loop incase loop does not find starting position
         for x in range(samples):
             temp = file.readline().split(" ")
             print(f"{temp[0]} and {temp[1]}")
             x_ax[x] = float(temp[0])
             y_ax[x] = float(temp[1])
-        tempPoints.y_points = y_ax # puts y-axis points inside the global original points variable
-        tempPoints.x_points = x_ax # puts x axis points inside the global original points variable
-        tempPoints.isPeriodic = originalIsPeriodic # puts periodic flag inside the global original points variable
-        tempPoints.signalType = originalSignalType # puts signaltype flag inside the global original points variable
+        tempPoints.y_points = y_ax  # puts y-axis points inside the global original points variable
+        tempPoints.x_points = x_ax  # puts x axis points inside the global original points variable
+        tempPoints.isPeriodic = originalIsPeriodic  # puts periodic flag inside the global original points variable
+        tempPoints.signalType = originalSignalType  # puts signaltype flag inside the global original points variable
         tempPoints.samples = samples
         return tempPoints
 
@@ -108,21 +112,20 @@ def importFromFile():
     originalFunctionLabel.configure(fg="green", bg="black")
     originalFunctionLabel.place(relwidth=0.5, relheight=0.1, relx=0.25, rely=0)
 
-    global  originalPoints
+    global originalPoints
     originalPoints = importFile()
     samplesShown = 0
-    if (originalPoints.x_points[0] > startingPos_var.get() or originalPoints.x_points[originalPoints.samples - 1] > startingPos_var.get()):
+    if (originalPoints.x_points[0] > startingPos_var.get() or originalPoints.x_points[
+        originalPoints.samples - 1] > startingPos_var.get()):
         if (originalPoints.samples - abs(startingPos_var.get()) < 40):
             samplesShown = originalPoints.samples - abs(startingPos_var.get())
         else:
             samplesShown = 40
-    shownPoints_X = [0]*samplesShown
-    shownPoints_Y = [0]*samplesShown
+    shownPoints_X = [0] * samplesShown
+    shownPoints_Y = [0] * samplesShown
     i = 0
-    if (startingPos_var.get() >= shownPoints_X[0]):
-        i = startingPos_var.get()
-    else:
-        i = shownPoints_X[0]
+    if startingPos_var.get() >= min(originalPoints.x_points) or startingPos_var.get() < max(originalPoints.x_points):
+        i = originalPoints.x_points.index(startingPos_var.get())
     for x in range(40):
         try:
             shownPoints_X[x] = originalPoints.x_points[i + x]
@@ -130,11 +133,11 @@ def importFromFile():
         except:
             break
 
-    fig,ax = plt.subplots()
+    fig, ax = plt.subplots()
     # takes X axis points and Y axis points and plots them on a graph with a darkgreen line
     ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
     ax.set_title("Original Graph")  # Self-explanatory
-    if (originalPoints.signalType == 1):  # if the signal type is 1 will replace time with frequency on the x axis
+    if originalPoints.signalType == 1:  # if the signal type is 1 will replace time with frequency on the x axis
         ax.set_xlabel("Frequency")
     else:  # else if its 0 then will label x as time
         ax.set_xlabel("Sample")
@@ -145,15 +148,16 @@ def importFromFile():
     originalGraph.draw()
     originalGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
 
+
 def browseClick():
     # Opens the browse menu and specifies that only text files can be taken
     file_var.set(filedialog.askopenfilename(title="Select a txt File", filetypes=[("Text files", "*.txt")]))
 
 
 def importMenuClick():
-    startingPos_var.set(0) #intitializes the value incase use does not provide it
-    width = 0.5 * root.winfo_width() # gets half the width of the window
-    height = 0.5 * root.winfo_height() # gets half the height of the window
+    startingPos_var.set(0)  # intitializes the value incase use does not provide it
+    width = 0.5 * root.winfo_width()  # gets half the width of the window
+    height = 0.5 * root.winfo_height()  # gets half the height of the window
 
     # creates the canvas and adds it to import canvas
     importCanvas = tk.Canvas(root, width=width, height=height, highlightthickness=2, highlightbackground="green")
@@ -165,9 +169,9 @@ def importMenuClick():
     importLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
     # creates a label for the note
-    noteLabel = tk.Label(importCanvas, text="*Starting Position only works if Starting Position < Samples - 40")
+    noteLabel = tk.Label(importCanvas, text="Starting Pos only works within the range of X")
     noteLabel.configure(fg="green", bg="black")
-    noteLabel.place(relwidth=0.5, relheight=0.1, relx=0.25, rely=0.1)
+    noteLabel.place(relwidth=0.6, relheight=0.1, relx=0.25, rely=0.1)
 
     # creates a label beside the file input
     fileLabel = tk.Label(importCanvas, text="File:")
@@ -188,7 +192,8 @@ def importMenuClick():
     startingPosEntry.place(relwidth=0.65, relheight=0.1, relx=0.25, rely=0.3)
 
     # creates a frame to put the button in (to get the border)
-    browseButtonBorder = tk.Frame(importCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    browseButtonBorder = tk.Frame(importCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                  highlightbackground="green")
     # creates a button that calls browseClick function when pressed
     browseButton = tk.Button(browseButtonBorder, text="Browse", command=browseClick, width='20')
     browseButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
@@ -197,7 +202,8 @@ def importMenuClick():
     browseButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
     # same as above
-    importButtonBorder = tk.Frame(importCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    importButtonBorder = tk.Frame(importCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                  highlightbackground="green")
     importButton = tk.Button(importButtonBorder, text="Import", command=importFromFile, width='20')
     importButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     importButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.4, rely=0.9)
@@ -210,18 +216,21 @@ def generatePoints(wave, startingPos):
     pointsY = [0] * 40  # initializes an array of 40 indexes
     for x in range(40):
         insideCos = 0  # function for the value inside the Cos or Sin
-        if wave.trigFunc == "sin": # if trigFunc is sin will use the sin version of the equation
-            insideInsideCos = (2 * np.pi * startingPos * wave.freq) / wave.sampleFreq # splitting up the function to make it easier to read
-            insideCos = np.sin(insideInsideCos + np.radians(wave.theta)) # splitting up the function to make it easier to read
-        elif wave.trigFunc == "cos": # if trigFunc is sin will use the sin version of the equation
-            insideInsideCos = (2 * np.pi * startingPos * wave.freq) / wave.sampleFreq # splitting up the function to make it easier to read
-            insideCos = np.cos(insideInsideCos + np.radians(wave.theta)) # splitting up the function to make it easier to read
-        posY = wave.amp * insideCos # Multiplies amplitude by the
-        pointsY[x] = posY # adds the point at Y to the array to the y axis
-        pointsX[x] = startingPos # adds the starting point to the x axis
-        startingPos += 1 # increment starting point by 1
-    points = Points(pointsX, pointsY) # adds the values into a class for easier management
+        if wave.trigFunc == "sin":  # if trigFunc is sin will use the sin version of the equation
+            insideInsideCos = (2 * np.pi * startingPos * wave.freq) / wave.sampleFreq
+            insideCos = np.sin(
+                insideInsideCos + np.radians(wave.theta))  # splitting up the function to make it easier to read
+        elif wave.trigFunc == "cos":  # if trigFunc is sin will use the sin version of the equation
+            insideInsideCos = (2 * np.pi * startingPos * wave.freq) / wave.sampleFreq
+            insideCos = np.cos(
+                insideInsideCos + np.radians(wave.theta))  # splitting up the function to make it easier to read
+        posY = wave.amp * insideCos  # Multiplies amplitude by the
+        pointsY[x] = posY  # adds the point at Y to the array to the y axis
+        pointsX[x] = startingPos  # adds the starting point to the x axis
+        startingPos += 1  # increment starting point by 1
+    points = Points(pointsX, pointsY)  # adds the values into a class for easier management
     return points  # returns an array of points for graph
+
 
 def generateClick():
     # changes the label variable on top of the graph based on wither its sin or cos purely for cosmetic reasons
@@ -232,7 +241,8 @@ def generateClick():
         originalFunctionString.set(
             f"{amp_var.get()} * Cos(((2π*{freq_var.get()})/{sampleFreq_var.get()})+{theta_var.get()})")
     # makes a label with the label variable
-    originalFunctionLabel = tk.Label(originalWaveCanvas, text=originalFunctionString.get(), highlightthickness=2, highlightbackground="green")
+    originalFunctionLabel = tk.Label(originalWaveCanvas, text=originalFunctionString.get(), highlightthickness=2,
+                                     highlightbackground="green")
     originalFunctionLabel.configure(fg="green", bg="black")
     originalFunctionLabel.place(relwidth=0.5, relheight=0.1, relx=0.25, rely=0)
 
@@ -242,7 +252,7 @@ def generateClick():
     # calls the generate points function and puts the points generated into global original wave points
     global originalPoints
     originalPoints = generatePoints(originalWave, startingPos_var.get())
-    fig, ax = plt.subplots() # creates a figure in fig and sub-plots in ax
+    fig, ax = plt.subplots()  # creates a figure in fig and sub-plots in ax
     # plots the graph using the original points object
     ax.plot(originalPoints.x_points, originalPoints.y_points, color="darkgreen")
     ax.set_title("Original Graph")
@@ -255,9 +265,9 @@ def generateClick():
 
 
 def generateMenuClick():
-    type_var.set("cos") # initializes type variable as cos for default incase user does not press
-    width = 0.5 * root.winfo_width() # gets the size of the window
-    height = 0.5 * root.winfo_height() # gets the size of the window
+    type_var.set("cos")  # initializes type variable as cos for default incase user does not press
+    width = 0.5 * root.winfo_width()  # gets the size of the window
+    height = 0.5 * root.winfo_height()  # gets the size of the window
 
     # creates a canvas for the generate menu
     generateCanvas = tk.Canvas(root, width=width, height=height, highlightthickness=2, highlightbackground="green")
@@ -315,7 +325,8 @@ def generateMenuClick():
     freqEntry.place(relwidth=0.6, relheight=0.1, relx=0.3, rely=0.6)
 
     # creates the generate button and its frame
-    generateButtonBorder = tk.Frame(generateCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    generateButtonBorder = tk.Frame(generateCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                    highlightbackground="green")
     generateButton = tk.Button(generateButtonBorder, text="Generate", command=generateClick, width='20')
     generateButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     generateButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.4, rely=0.9)
@@ -324,36 +335,85 @@ def generateMenuClick():
     generateCanvas.place(relwidth=0.5, relheight=0.5, relx=0, rely=0.5)
 
 
-
 def generateEditedWaveClick():
     global editedPoints
     global editedWave
-    editedWave = Wave(type_var.get(),amp_var.get(),theta_var.get(),sampleFreq_var.get(),freq_var.get())
+    editedWave = Wave(type_var.get(), amp_var.get(), theta_var.get(), sampleFreq_var.get(), freq_var.get())
     editedPoints = generatePoints(editedWave, startingPos_var.get())
-    editedPoints.x_points = editedPoints.x_points
-    editedPoints.y_points = editedPoints.y_points
-def addWaveClick():
+
+
+def addImportWaveClick():
+    global editedPoints
+    editedPoints = importFile()
+
+
+def addSubEditWave(type="add"):
     global editedPoints
     global originalPoints
-    addedPoints_X = [0]*40
-    addedPoints_Y = [0]*40
-    if (editedPoints.samples + originalPoints.samples >= 40):
-        for x in range(40):
-            x = 1
+    global postEditPoints
+    minimum_point = min(min(editedPoints.x_points), min(originalPoints.x_points))
+    maximum_point = max(max(editedPoints.x_points), max(originalPoints.x_points))
+    total_samples = int(maximum_point - minimum_point)
+    print(f"total: {total_samples}")
+    postEditPoints.x_points = [0]*total_samples
+    postEditPoints.y_points = [0]*total_samples
+    i = minimum_point
+    x = 0
+    z = 0
+    while i <= maximum_point + 1:
+        flag_found = 0
+        for y in range(total_samples):
+            try:
+                if editedPoints.x_points[z] == i:
+                    if originalPoints.x_points[y] == i:
+                        if type == "add":
+                            postEditPoints.x_points[x] = int(editedPoints.x_points[z])
+                            postEditPoints.y_points[x] = editedPoints.y_points[z] + originalPoints.y_points[y]
+                            flag_found = 1
+                        elif type == "sub":
+                            postEditPoints.x_points[x] = int(editedPoints.x_points[z])
+                            postEditPoints.y_points[x] = editedPoints.y_points[z] - originalPoints.y_points[y]
+                            flag_found = 1
+                elif originalPoints.x_points[y] == i:
+                    postEditPoints.x_points[x] = int(originalPoints.x_points[y])
+                    postEditPoints.y_points[x] = originalPoints.y_points[y]
+                    flag_found = 1
+            except IndexError:
+                break
+        try:
+            if flag_found == 0:
+                if editedPoints.x_points[x] == i:
+                    postEditPoints.x_points[x] = int(editedPoints.x_points[z])
+                    postEditPoints.y_points[x] = editedPoints.y_points[z]
+            print(f"{postEditPoints.x_points[x]} and {postEditPoints.y_points[x]}")
+        except IndexError:
+            break
+        z = z + 1
+        if z > editedPoints.samples:
+            z = 0
+        x = x + 1
+        i = i + 1
+    shown_samples = 0
+    if maximum_point - shown_samples < 40:
+        shown_samples = maximum_point - shown_samples
     else:
-        addedPoints_X = [0] * editedPoints.samples
-        addedPoints_Y = [0] * editedPoints.samples
-        for x in range(editedPoints.samples + originalPoints.samples):
-            if(editedPoints.x_points[x] == originalPoints.x_points[x]):
-                addedPoints_X[x] = originalPoints.x_points[x]
-                addedPoints_Y[x] = originalPoints.y_points[x] + editedPoints.x_points[x]
-            else:
-                addedPoints_X[x] = 1
+        shown_samples = 40
+    shownPoints_X = [0]*shown_samples
+    shownPoints_Y = [0]*shown_samples
 
-
-
+    i = 0
+    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
+        i = postEditPoints.x_points.index(startingPos_var.get())
+    for x in range(40):
+        try:
+            shownPoints_X[x] = postEditPoints.x_points[i + x]
+            shownPoints_Y[x] = postEditPoints.y_points[i + x]
+        except:
+            break
+    for x in range(shown_samples):
+        print("h")
     fig, ax = plt.subplots()
-    ax.plot(editedPoints.x_points, editedPoints.y_points, color="darkgreen")
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
     ax.set_title("Edited Wave")
     ax.set_xlabel("Sample")
     ax.set_ylabel("Amplitude")
@@ -361,13 +421,24 @@ def addWaveClick():
     editedGraph.draw()
     editedGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
     return
-def subWaveClick():
+
+
+def addWaveClick():
+    addSubEditWave("add")
     return
+
+
+def subWaveClick():
+    addSubEditWave("sub")
+    return
+
+
 def editAddClick():
     type_var.set("cos")
-    editAddCanvas = tk.Canvas(root, bg = "black",highlightthickness=2, highlightcolor="green",highlightbackground="green")
+    editAddCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
 
-    addLabel = tk.Label(editAddCanvas, text="Add:", highlightthickness=2, highlightbackground="green")
+    addLabel = tk.Label(editAddCanvas, text="Add/Sub:", highlightthickness=2, highlightbackground="green")
     addLabel.configure(fg="green", bg="black")
     addLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
@@ -392,7 +463,6 @@ def editAddClick():
 
     ampEntry = tk.Entry(editAddCanvas, textvariable=amp_var)
     ampEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
-
 
     thetaLabel = tk.Label(editAddCanvas, text="Theta:")
     thetaLabel.configure(fg="green", bg="black")
@@ -423,31 +493,37 @@ def editAddClick():
     browseEntry.place(relwidth=0.4, relheight=0.1, relx=0.5, rely=0.4)
 
     # buttons
-    browseWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    browseWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                      highlightbackground="green")
     browseWaveButton = tk.Button(browseWaveButtonBorder, text="Browse", command=browseClick, width='20')
     browseWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     browseWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.6, rely=0.6)
     browseWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    generateWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
-    generateWaveButton = tk.Button(generateWaveButtonBorder, text="Generate", command=generateEditedWaveClick, width='20')
+    generateWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                        highlightbackground="green")
+    generateWaveButton = tk.Button(generateWaveButtonBorder, text="Generate", command=generateEditedWaveClick,
+                                   width='20')
     generateWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     generateWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.75)
     generateWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    importWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
-    importWaveButton = tk.Button(importWaveButtonBorder, text="Import", command=addWaveClick, width='20')
+    importWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                      highlightbackground="green")
+    importWaveButton = tk.Button(importWaveButtonBorder, text="Import", command=addImportWaveClick, width='20')
     importWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     importWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.6, rely=0.75)
     importWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    addWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    addWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
     addWaveButton = tk.Button(addWaveButtonBorder, text="Add", command=addWaveClick, width='20')
     addWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     addWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.6, rely=0.9)
     addWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    subWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    subWaveButtonBorder = tk.Frame(editAddCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
     subWaveButton = tk.Button(subWaveButtonBorder, text="Subtract", command=subWaveClick, width='20')
     subWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     subWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.9)
@@ -457,25 +533,34 @@ def editAddClick():
     editAddCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
     return
 
+
 def editMulClick():
-    editMulCanvas = tk.Canvas(root, bg = "black",highlightthickness=2, highlightcolor="green",highlightbackground="green")
+    editMulCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
     editMulCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
     return
 
+
 def editSqrClick():
-    editSqrCanvas = tk.Canvas(root, bg = "black",highlightthickness=2, highlightcolor="green",highlightbackground="green")
+    editSqrCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
     editSqrCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
     return
 
+
 def editNormClick():
-    editNormCanvas = tk.Canvas(root, bg = "black",highlightthickness=2, highlightcolor="green",highlightbackground="green")
+    editNormCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                               highlightbackground="green")
     editNormCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
     return
 
+
 def editSumClick():
-    editSumCanvas = tk.Canvas(root, bg = "black",highlightthickness=2, highlightcolor="green",highlightbackground="green")
+    editSumCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
+                              highlightbackground="green")
     editSumCanvas.place(relwidth=0.5, relheight=0.4, relx=0, rely=0.55)
     return
+
 
 def editWaveClick():
     global editedPoints
@@ -492,8 +577,8 @@ def editWaveClick():
 
 
 def editMenuClick():
-    width = 0.5 * root.winfo_width() # gets size of window
-    height = 0.5 * root.winfo_height() # gets size of window
+    width = 0.5 * root.winfo_width()  # gets size of window
+    height = 0.5 * root.winfo_height()  # gets size of window
     # creates a canvas for edit menu
     editCanvas = tk.Canvas(root, width=width, height=height, highlightthickness=2, highlightbackground="green")
     editCanvas.configure(bg="black")
@@ -503,32 +588,36 @@ def editMenuClick():
     editLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
 
     # Buttons for edit menu
-    addWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    addWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
     addWaveButton = tk.Button(addWaveButtonBorder, text="Add/Sub", command=editAddClick, width='20')
     addWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     addWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.3, rely=0)
     addWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-
-    mulWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    mulWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
     mulWaveButton = tk.Button(mulWaveButtonBorder, text="Multi", command=editMulClick, width='20')
     mulWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     mulWaveButtonBorder.place(relwidth=0.1, relheight=0.1, relx=0.5, rely=0)
     mulWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    sqrWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    sqrWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
     sqrWaveButton = tk.Button(sqrWaveButtonBorder, text="Square", command=editSqrClick, width='20')
     sqrWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     sqrWaveButtonBorder.place(relwidth=0.1, relheight=0.1, relx=0.6, rely=0)
     sqrWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    normWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    normWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                    highlightbackground="green")
     normWaveButton = tk.Button(normWaveButtonBorder, text="Normal", command=editNormClick, width='20')
     normWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     normWaveButtonBorder.place(relwidth=0.1, relheight=0.1, relx=0.7, rely=0)
     normWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
-    sumWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    sumWaveButtonBorder = tk.Frame(editCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
     sumWaveButton = tk.Button(sumWaveButtonBorder, text="Sum", command=editSumClick, width='20')
     sumWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
     sumWaveButtonBorder.place(relwidth=0.1, relheight=0.1, relx=0.8, rely=0)
