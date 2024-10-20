@@ -615,9 +615,9 @@ def fileExport(wave_type="original"):
         saved_points = editedPoints
     else:
         return
-    string = f"{saved_points.signalType}\n{saved_points.isPeriodic}\n{saved_points.samples}"
+    string = f"{int(saved_points.signalType)}\n{int(saved_points.isPeriodic)}\n{int(saved_points.samples)}"
     for x in range(saved_points.samples):
-        string = string + f"\n{int(originalPoints.x_points[x])} {originalPoints.y_points[x]}"
+        string = string + f"\n{int(originalPoints.x_points[x])} {float(originalPoints.y_points[x])}"
     file.write(string)
 
 
