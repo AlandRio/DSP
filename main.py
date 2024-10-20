@@ -586,7 +586,7 @@ def editMulClick():
                                    highlightbackground="green")
     mulWaveButton = tk.Button(mulWaveButtonBorder, text="MULTIPLY", command=mulClick, width='20')
     mulWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
-    mulWaveButtonBorder.place(relwidth=0.2, relheight=0.1, relx=0.4, rely=0.7)
+    mulWaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.6)
     mulWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
     editMulCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
@@ -636,12 +636,12 @@ def editSqrClick():
 
     posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
 
-    mulWaveButtonBorder = tk.Frame(editSqrCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+    sqrWaveButtonBorder = tk.Frame(editSqrCanvas, bd=0, highlightthickness=2, highlightcolor="green",
                                    highlightbackground="green")
-    mulWaveButton = tk.Button(mulWaveButtonBorder, text="SQUARE", command=sqrClick, width='20')
-    mulWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
-    mulWaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.6)
-    mulWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
+    sqrWaveButton = tk.Button(sqrWaveButtonBorder, text="SQUARE", command=sqrClick, width='20')
+    sqrWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    sqrWaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.6)
+    sqrWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
     editSqrCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
     return
@@ -661,6 +661,34 @@ def editNormClick():
     return
 
 def sumClick():
+    global postEditPoints
+    postEditPoints.samples = len(originalPoints.x_points)
+    postEditPoints.x_points = [0] * postEditPoints.samples
+    postEditPoints.y_points = [0] * postEditPoints.samples
+    sum = 0
+    for x in range(postEditPoints.samples):
+        postEditPoints.x_points[x] = (originalPoints.x_points[x])
+        sum = sum + originalPoints.y_points[x]
+        postEditPoints.y_points[x] = sum
+    shownPoints_X = [0] * 40
+    shownPoints_Y = [0] * 40
+    i = 0
+    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
+        i = postEditPoints.x_points.index(startingPos_var.get())
+    for x in range(40):
+        try:
+            shownPoints_X[x] = postEditPoints.x_points[i + x]
+            shownPoints_Y[x] = postEditPoints.y_points[i + x]
+        except IndexError:
+            break
+    fig, ax = plt.subplots()
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
+    ax.set_title("Edited Wave")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Amplitude")
+    editedGraph = FigureCanvasTkAgg(fig, master=editedWaveCanvas)
+    editedGraph.draw()
+    editedGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
     return
 def editSumClick():
     editSumCanvas = tk.Canvas(root, bg="black", highlightthickness=2, highlightcolor="green",
@@ -669,6 +697,21 @@ def editSumClick():
     sumLabel = tk.Label(editSumCanvas, text="Accumulate:", highlightthickness=2, highlightbackground="green")
     sumLabel.configure(fg="green", bg="black")
     sumLabel.place(relwidth=0.25, relheight=0.1, relx=0, rely=0)
+
+    posLabel = tk.Label(editSumCanvas, text="Starting Pos:")
+    posLabel.configure(fg="green", bg="black")
+    posLabel.place(relwidth=0.2, relheight=0.1, relx=0.05, rely=0.3)
+
+    posEntry = tk.Entry(editSumCanvas, textvariable=startingPos_var)
+
+    posEntry.place(relwidth=0.2, relheight=0.1, relx=0.25, rely=0.3)
+
+    sumWaveButtonBorder = tk.Frame(editSumCanvas, bd=0, highlightthickness=2, highlightcolor="green",
+                                   highlightbackground="green")
+    sumWaveButton = tk.Button(sumWaveButtonBorder, text="ACCUMULATE", command=sumClick, width='20')
+    sumWaveButton.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    sumWaveButtonBorder.place(relwidth=0.2, relheight=0.2, relx=0.4, rely=0.6)
+    sumWaveButton.place(relwidth=1, relheight=1, relx=0, rely=0)
 
     editSumCanvas.place(relwidth=0.5, relheight=0.45, relx=0, rely=0.55)
     return
@@ -759,14 +802,22 @@ def SignalSamplesAreEqual(compare_type="edited"):
     test_failed = 0
     if len(expected_samples) != len(samples):
         line_var.set("Test case failed, your signal have different length from the expected one")
-        print("Test case failed, your signal have different values from the expected one1")
+        if test_failed == 0:
+            print("Test case failed, your signal have different values from the expected one1")
         test_failed = 1
     for i in range(len(expected_samples)):
-        if abs(samples[i] - expected_samples[i]) < 0.01:
-            continue
-        else:
+        try:
+            if abs(samples[i] - expected_samples[i]) < 0.01:
+                continue
+            else:
+                line_var.set("Test case failed, your signal have different values from the expected one")
+                if test_failed == 0:
+                    print("Test case failed, your signal have different values from the expected one2")
+                test_failed = 1
+        except IndexError:
             line_var.set("Test case failed, your signal have different values from the expected one")
-            print("Test case failed, your signal have different values from the expected one2")
+            if test_failed == 0:
+                print("Test case failed, your signal have different values from the expected one2")
             test_failed = 1
 
     if test_failed == 0:

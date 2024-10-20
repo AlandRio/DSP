@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6531b965-3ae2-4e7f-b96d-674e2942a71a" name="Changes" comment="added multiply functionality">
+    <list default="true" id="6531b965-3ae2-4e7f-b96d-674e2942a71a" name="Changes" comment="added square functionality">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -190,7 +190,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729456872262</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="added square functionality">
+      <option name="closed" value="true" />
+      <created>1729457437170</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1729457437170</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -219,7 +227,8 @@
     <MESSAGE value="made importing much more modular" />
     <MESSAGE value="added add/sub functionality" />
     <MESSAGE value="added multiply functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="added multiply functionality" />
+    <MESSAGE value="added square functionality" />
+    <option name="LAST_COMMIT_MESSAGE" value="added square functionality" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -236,12 +245,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>833</line>
+          <line>884</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>729</line>
+          <line>772</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
