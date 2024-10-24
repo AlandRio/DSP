@@ -134,7 +134,8 @@ def importFromFile():
     global originalPoints
     originalPoints = importFile()
     samplesShown = 0
-    if originalPoints.x_points[0] > startingPos_var.get() or originalPoints.x_points[originalPoints.samples - 1] > startingPos_var.get():
+    if originalPoints.x_points[0] > startingPos_var.get() or originalPoints.x_points[
+        originalPoints.samples - 1] > startingPos_var.get():
         if originalPoints.samples - abs(startingPos_var.get()) < 40:
             samplesShown = originalPoints.samples - abs(startingPos_var.get())
         else:
@@ -599,10 +600,11 @@ def compareMenuClick():
     createLabel("Compare:", compareCanvas, 1, 0.25, 0.1, 0, 0)
 
     createLabel("File:", compareCanvas, 0, 0.2, 0.1, 0.05, 0.2)
-    createEntry(file_var, compareCanvas, 0.6, 0.1, 0.25, 0.2)
-    createButton("Browse", browseClick, compareCanvas, 0.2, 0.1, 0.45, 0.4)
+    createEntry(file_var, compareCanvas, 0.4, 0.1, 0.25, 0.2)
+    createButton("Browse", browseClick, compareCanvas, 0.2, 0.1, 0.65, 0.2)
     createButton("Compare OG", compareOriginalClick, compareCanvas, 0.2, 0.1, 0.25, 0.4)
-    createButton("Compare ED", compareEditedClick, compareCanvas, 0.2, 0.1, 0.65, 0.4)
+    createButton("Compare ED", compareEditedClick, compareCanvas, 0.2, 0.1, 0.45, 0.4)
+    createButton("Compare QN", compareOriginalClick, compareCanvas, 0.2, 0.1, 0.65, 0.4)
 
 
 def fileExport(wave_type="original"):
@@ -631,16 +633,22 @@ def editedExportClick():
     print("export")
 
 
+def quantizeMenuClick():
+    return
+
+
 # Creating Label
 createLabel("Dsp - Section 1", menuCanvas, 1, 0.25, 0.1, 0, 0)
 createLabel("Original Wave:", originalWaveCanvas, 1, 0.25, 0.1, 0, 0)
 createLabel("Edited Wave:", editedWaveCanvas, 1, 0.25, 0.1, 0, 0)
 # Creating Buttons
-createButton("Import", importMenuClick, menuCanvas, 0.25, 0.2, 0, 0.2)
-createButton("Generate", generateMenuClick, menuCanvas, 0.25, 0.2, 0, 0.4)
 createButton("Export", originalExportClick, originalWaveCanvas, 0.25, 0.1, 0.75, 0)
 createButton("Export", editedExportClick, editedWaveCanvas, 0.25, 0.1, 0.75, 0)
-createButton("Edit", editMenuClick, menuCanvas, 0.25, 0.2, 0, 0.6)
-createButton("Compare", compareMenuClick, menuCanvas, 0.25, 0.2, 0, 0.8)
+createButton("Import", importMenuClick, menuCanvas, 0.25, 0.1, 0, 0.2)
+createButton("Generate", generateMenuClick, menuCanvas, 0.25, 0.1, 0, 0.3)
+createButton("Quantize", quantizeMenuClick, menuCanvas, 0.25, 0.1, 0, 0.4)
+createButton("Edit", editMenuClick, menuCanvas, 0.25, 0.1, 0, 0.5)
+createButton("Compare", compareMenuClick, menuCanvas, 0.25, 0.1, 0, 0.6)
+
 # causes app to start and enter a while loop while it is on
 root.mainloop()
