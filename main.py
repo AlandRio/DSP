@@ -3,6 +3,7 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter import filedialog
 import numpy as np
+import math as math
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
@@ -17,12 +18,20 @@ class Wave:  # class for wave used in generate
 
 
 class Points:  # class for storing points
-    def __init__(self, x_points=range(40), y_points=range(40), signalType=0, isPeriodic=1, samples=40):
+    def __init__(self, x_points=[], y_points=[], signalType=0, isPeriodic=1, samples=1000):
         self.x_points = x_points  # Points on the X-Axis
         self.y_points = y_points  # Points on the Y-Axis
         self.signalType = signalType  # Wither the signal is Time (0) or Frequency (1)
         self.isPeriodic = isPeriodic  # Wither the signal is Non-Periodic (0) or Periodic (1)
         self.samples = samples
+
+
+class quantPoints:
+    def __init__(self,points = Points(),err = [], levels = [],levelsBin = []):
+        self.points = points,
+        self.err = err,
+        self.levels = levels
+        self.levelsBin = levelsBin
 
 
 # Creating and defining Root Window for the app
@@ -43,15 +52,29 @@ sampleFreq_var = tk.DoubleVar()
 freq_var = tk.DoubleVar()
 originalFunctionString = tk.StringVar()
 line_var = tk.StringVar()
+quantype_var = tk.StringVar()
+quanum_var = tk.IntVar()
 # Defining Global Objects for Original Graph and Edited Graph
 originalPoints = Points()
 originalWave = Wave()
 editedPoints = Points()
 editedWave = Wave()
 postEditPoints = Points()
+quantizedPoints = quantPoints()
 
 
 # functions to optimize code
+def getBin(n,l):
+    binary = bin(n).split("b")
+    length = l - len(binary[1])
+    binaryString = ""
+    if length > 0:
+        for x in range (length):
+            binaryString = binaryString + "0"
+    binaryString = binaryString + binary[1]
+    return binaryString
+
+
 def createCanvas(canvas, relwidth, relheight, relx, rely):
     width = root.winfo_width()
     height = root.winfo_height()
@@ -81,10 +104,21 @@ def createButton(label, func, canvas, relwidth, relheight, relx, rely):
     Button.place(relwidth=1, relheight=1, relx=0, rely=0)
 
 
-def createGraph(x_points, y_points, graph_label, x_label, canvas):
+def createGraph(points_x, points_y, graph_label, x_label, canvas):
+    shownPoints_X = []
+    shownPoints_Y = []
+    i = 0
+    if startingPos_var.get() >= min(points_x) or startingPos_var.get() < max(points_x):
+        i = points_x.index(startingPos_var.get())
+    for x in range(40):
+        try:
+            shownPoints_X.append(points_x[i + x])
+            shownPoints_Y.append(points_y[i + x])
+        except IndexError:
+            break
     fig, ax = plt.subplots()  # creates a figure in fig and sub-plots in ax
     # plots the graph using the original points object
-    ax.plot(x_points, y_points, color="darkgreen")
+    ax.plot(shownPoints_X, shownPoints_Y, color="darkgreen")
     ax.set_title(graph_label)
     ax.set_xlabel(x_label)
     ax.set_ylabel("Amplitude")
@@ -92,6 +126,11 @@ def createGraph(x_points, y_points, graph_label, x_label, canvas):
     originalGraph = FigureCanvasTkAgg(fig, master=canvas)
     originalGraph.draw()
     originalGraph.get_tk_widget().place(relwidth=1, relheight=0.9, relx=0, rely=0.1)
+
+
+def createCheck(var,onvalue,offvalue,canvas,relx,rely):
+    check = tk.Checkbutton(canvas, variable=var, onvalue=onvalue, offvalue=offvalue, bg="black")
+    check.place(relwidth=0.05, relheight=0.1, relx=relx, rely=rely)
 
 
 # Creating Canvases then configuring its background then placing it on the window
@@ -107,10 +146,10 @@ def importFile():
         # Opens file using the path user gave
         file = open(file_var.get())
         # takes the 1st line of the file which is SignalType
-        originalSignalType = bool(file.readline())
+        originalSignalType = int(file.readline())
         print(f"Signal type: {originalSignalType}")  # Prints for debugging purposes
         # takes the 2nd line of the file which is isPeriodic
-        originalIsPeriodic = bool(file.readline())
+        originalIsPeriodic = int(file.readline())
         print(f"Periodic: {originalIsPeriodic}")  # Prints for debugging purposes
         # takes the 3rd line of the file which is number of samples
         samples = int(file.readline())
@@ -119,9 +158,9 @@ def importFile():
         i = 0  # variable used in the while loop incase loop does not find starting position
         for x in range(samples):
             temp = file.readline().split(" ")
-            print(f"{temp[0]} and {temp[1]}")
-            x_ax[x] = float(temp[0])
+            x_ax[x] = int(temp[0])
             y_ax[x] = float(temp[1])
+            print(f"{x_ax[x]} and {y_ax[x]}")
         tempPoints.y_points = y_ax  # puts y-axis points inside the global original points variable
         tempPoints.x_points = x_ax  # puts x axis points inside the global original points variable
         tempPoints.isPeriodic = originalIsPeriodic  # puts periodic flag inside the global original points variable
@@ -133,28 +172,10 @@ def importFile():
 def importFromFile():
     global originalPoints
     originalPoints = importFile()
-    samplesShown = 0
-    if originalPoints.x_points[0] > startingPos_var.get() or originalPoints.x_points[
-        originalPoints.samples - 1] > startingPos_var.get():
-        if originalPoints.samples - abs(startingPos_var.get()) < 40:
-            samplesShown = originalPoints.samples - abs(startingPos_var.get())
-        else:
-            samplesShown = 40
-    shownPoints_X = [0] * samplesShown
-    shownPoints_Y = [0] * samplesShown
-    i = 0
-    if startingPos_var.get() >= min(originalPoints.x_points) or startingPos_var.get() < max(originalPoints.x_points):
-        i = originalPoints.x_points.index(startingPos_var.get())
-    for x in range(40):
-        try:
-            shownPoints_X[x] = originalPoints.x_points[i + x]
-            shownPoints_Y[x] = originalPoints.y_points[i + x]
-        except IndexError:
-            break
     if originalPoints.signalType == 1:
-        createGraph(shownPoints_X, shownPoints_Y, "Original Graph", "Frequency", originalWaveCanvas)
+        createGraph(originalPoints.x_points, originalPoints.y_points, "Original Graph", "Frequency", originalWaveCanvas)
     else:
-        createGraph(shownPoints_X, shownPoints_Y, "Original Graph", "Sample", originalWaveCanvas)
+        createGraph(originalPoints.x_points, originalPoints.y_points, "Original Graph", "Sample", originalWaveCanvas)
 
 
 def browseClick():
@@ -179,9 +200,9 @@ def importMenuClick():
 
 
 def generatePoints(wave, startingPos):
-    pointsX = [0] * 40  # initializes an array of 40 indexes
-    pointsY = [0] * 40  # initializes an array of 40 indexes
-    for x in range(40):
+    pointsX = []  # initializes an array of 40 indexes
+    pointsY = []  # initializes an array of 40 indexes
+    for x in range(1000):
         insideCos = 0  # function for the value inside the Cos or Sin
         if wave.trigFunc == "sin":  # if trigFunc is sin will use the sin version of the equation
             insideInsideCos = (2 * np.pi * startingPos * wave.freq) / wave.sampleFreq
@@ -192,8 +213,8 @@ def generatePoints(wave, startingPos):
             insideCos = np.cos(
                 insideInsideCos + np.radians(wave.theta))  # splitting up the function to make it easier to read
         posY = wave.amp * insideCos  # Multiplies amplitude by the
-        pointsY[x] = posY  # adds the point at Y to the array to the y-axis
-        pointsX[x] = startingPos  # adds the starting point to the x-axis
+        pointsY.append(posY)  # adds the point at Y to the array to the y-axis
+        pointsX.append(startingPos)  # adds the starting point to the x-axis
         startingPos += 1  # increment starting point by 1
     points = Points(pointsX, pointsY)  # adds the values into a class for easier management
     return points  # returns an array of points for graph
@@ -201,45 +222,97 @@ def generatePoints(wave, startingPos):
 
 def generateClick():
     # using the input the user gave in generate function changes the global original wave object
-    global originalWave
+    global originalWave,originalPoints
     originalWave = Wave(type_var.get(), amp_var.get(), theta_var.get(), sampleFreq_var.get(), freq_var.get())
     # calls the generate points function and puts the points generated into global original wave points
-    global originalPoints
     originalPoints = generatePoints(originalWave, startingPos_var.get())
+    originalPoints.samples = len(originalPoints.x_points)
     createGraph(originalPoints.x_points, originalPoints.y_points, "Original Graph", "Sample", originalWaveCanvas)
 
 
 def generateMenuClick():
     type_var.set("cos")
     generateCanvas = createCanvas(root, 0.5, 0.5, 0, 0.5)
-
     createLabel("Generate:", generateCanvas, 1, 0.25, 0.1, 0, 0)
 
     createLabel("Sin():", generateCanvas, 0, 0.2, 0.1, 0.1, 0.1)
-    typeCheck = tk.Checkbutton(generateCanvas, variable=type_var, onvalue="sin", offvalue="cos", bg="black")
-    typeCheck.place(relwidth=0.1, relheight=0.1, relx=0.3, rely=0.1)
-
+    createCheck(quantype_var,"sin","cos",generateCanvas,0.3,0.1)
     createLabel("Amplitude:", generateCanvas, 0, 0.2, 0.1, 0.1, 0.2)
     createEntry(amp_var, generateCanvas, 0.6, 0.1, 0.3, 0.2)
-
     createLabel("Starting Pos:", generateCanvas, 0, 0.2, 0.1, 0.1, 0.3)
     createEntry(startingPos_var, generateCanvas, 0.6, 0.1, 0.3, 0.3)
-
     createLabel("Theta:", generateCanvas, 0, 0.2, 0.1, 0.1, 0.4)
     createEntry(theta_var, generateCanvas, 0.6, 0.1, 0.3, 0.4)
-
     createLabel("Sample Frequency:", generateCanvas, 0, 0.2, 0.1, 0.1, 0.5)
     createEntry(sampleFreq_var, generateCanvas, 0.6, 0.1, 0.3, 0.5)
-
     createLabel("Frequency:", generateCanvas, 0, 0.2, 0.1, 0.1, 0.6)
     createEntry(freq_var, generateCanvas, 0.6, 0.1, 0.3, 0.6)
 
     createButton("Generate", generateClick, generateCanvas, 0.2, 0.1, 0.4, 0.9)
 
+def quantClick():
+    global originalPoints,quantizedPoints,postEditPoints
+    points_x = []
+    points_y = []
+    levels = 0
+    bits = 0
+    if quantype_var.get() == "levels":
+        levels = quanum_var.get()
+        bits = math.ceil(math.log2(quanum_var.get()))
+    elif quantype_var.get() == "bits":
+        levels = pow(2,quanum_var.get())
+        bits = quanum_var.get()
+    print(f"\nLevels: {levels}\n")
+    min_point = min(originalPoints.y_points)
+    max_point = max(originalPoints.y_points)
+    jump = max_point - min_point
+    jumpPerLvl = jump / (levels)
+    ranges_arr = []
+    levels_arr = []
+    levelDec_arr = []
+    levelBin_arr = []
+    error_arr = []
+    for x in range(levels + 1):
+        ranges_arr.append(round(min_point + (jumpPerLvl*x),3))
+        print(f"{ranges_arr[x]}")
+    for x in range(levels):
+        approx_y = round((ranges_arr[x] + ranges_arr[x + 1])/2,3)
+        levels_arr.append(approx_y)
+        print(f"Level: ")
+    for x in range(len(originalPoints.x_points)):
+        for y in range(levels):
+            if originalPoints.y_points[x] >= ranges_arr[y] and originalPoints.y_points[x] <= ranges_arr[y + 1]:
+                points_x.append(originalPoints.x_points[x])
+                points_y.append(levels_arr[y])
+                levelDec_arr.append(y + 1)
+                levelBin_arr.append(getBin(y,bits))
+                error_arr.append(round(points_y[x] - originalPoints.y_points[x],3))
+                print(f"{levelBin_arr[x]}: ({originalPoints.x_points[x]},{points_y[x]}) and Error = {error_arr[x]}")
+                break
+    quantizedPoints.points = Points(points_x,points_y,originalPoints.signalType,originalPoints.isPeriodic,originalPoints.samples)
+    quantizedPoints.levelsBin = levelBin_arr
+    quantizedPoints.levels = levelDec_arr
+    quantizedPoints.err = error_arr
+    postEditPoints = quantizedPoints.points
+    createGraph(points_x,points_y,"Quantized Graph","Sample",editedWaveCanvas)
+    
+
+def quantizeMenuClick():
+    quantype_var.set("levels")
+    quantCanvas = createCanvas(root, 0.5, 0.5, 0, 0.5)
+    createLabel("Quantize:", quantCanvas, 1, 0.25, 0.1, 0, 0)
+
+    createLabel("Bits?", quantCanvas, 0, 0.15, 0.1, 0.1, 0.2)
+    createCheck(quantype_var,"bits","levels",quantCanvas,0.25,0.2)
+    createEntry(quanum_var, quantCanvas, 0.6, 0.1, 0.3, 0.2)
+    createLabel("Starting Pos:", quantCanvas, 0, 0.2, 0.1, 0.1, 0.3)
+    createEntry(startingPos_var, quantCanvas, 0.6, 0.1, 0.3, 0.3)
+
+    createButton("QUANTIZE", quantClick, quantCanvas, 0.2, 0.2, 0.4, 0.5)
+
 
 def generateEditedWaveClick():
-    global editedPoints
-    global editedWave
+    global editedPoints,editedWave
     editedWave = Wave(type_var.get(), amp_var.get(), theta_var.get(), sampleFreq_var.get(), freq_var.get())
     editedPoints = generatePoints(editedWave, startingPos_var.get())
 
@@ -250,9 +323,7 @@ def addImportWaveClick():
 
 
 def addSubEditWave(math_type="add"):
-    global editedPoints
-    global originalPoints
-    global postEditPoints
+    global editedPoints,originalPoints,postEditPoints
     minimum_point = min(min(editedPoints.x_points), min(originalPoints.x_points))
     maximum_point = max(max(editedPoints.x_points), max(originalPoints.x_points))
     total_samples = int(maximum_point - minimum_point) + 1
@@ -295,23 +366,7 @@ def addSubEditWave(math_type="add"):
             z = 0
         x = x + 1
         i = i + 1
-    shown_samples = 0
-    if maximum_point - shown_samples < 40:
-        shown_samples = maximum_point - shown_samples
-    else:
-        shown_samples = 40
-    shownPoints_X = [0] * shown_samples
-    shownPoints_Y = [0] * shown_samples
-    i = 0
-    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
-        i = postEditPoints.x_points.index(startingPos_var.get())
-    for x in range(40):
-        try:
-            shownPoints_X[x] = postEditPoints.x_points[i + x]
-            shownPoints_Y[x] = postEditPoints.y_points[i + x]
-        except IndexError:
-            break
-    createGraph(shownPoints_X, shownPoints_Y, "Edited Wave", "Sample", editedWaveCanvas)
+    createGraph(postEditPoints.x_points, postEditPoints.y_points, "Edited Wave", "Sample", editedWaveCanvas)
     return
 
 
@@ -331,8 +386,7 @@ def editAddClick():
     createLabel("Add/Sub:", editAddCanvas, 1, 0.25, 0.1, 0, 0)
     # Creates a label for a variable then its input from the user
     createLabel("Sin():", editAddCanvas, 0, 0.2, 0.1, 0.05, 0.2)
-    typeCheck = tk.Checkbutton(editAddCanvas, variable=type_var, onvalue="sin", offvalue="cos", bg="black")
-    typeCheck.place(relwidth=0.1, relheight=0.1, relx=0.25, rely=0.2)
+    createCheck(quantype_var,"sin","cos",editAddCanvas,0.25,0.2)
 
     createLabel("Starting Pos:", editAddCanvas, 0, 0.2, 0.1, 0.25, 0.1)
     createEntry(startingPos_var, editAddCanvas, 0.2, 0.1, 0.45, 0.1)
@@ -368,18 +422,7 @@ def mulClick():
     for x in range(postEditPoints.samples):
         postEditPoints.x_points[x] = (originalPoints.x_points[x])
         postEditPoints.y_points[x] = (originalPoints.y_points[x] * amp_var.get())
-    shownPoints_X = [0] * 40
-    shownPoints_Y = [0] * 40
-    i = 0
-    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
-        i = postEditPoints.x_points.index(startingPos_var.get())
-    for x in range(40):
-        try:
-            shownPoints_X[x] = postEditPoints.x_points[i + x]
-            shownPoints_Y[x] = postEditPoints.y_points[i + x]
-        except IndexError:
-            break
-    createGraph(shownPoints_X, shownPoints_Y, "Edited Wave", "Sample", editedWaveCanvas)
+    createGraph(postEditPoints.x_points, postEditPoints.y_points, "Edited Wave", "Sample", editedWaveCanvas)
     return
 
 
@@ -404,18 +447,8 @@ def sqrClick():
     for x in range(postEditPoints.samples):
         postEditPoints.x_points[x] = (originalPoints.x_points[x])
         postEditPoints.y_points[x] = (originalPoints.y_points[x] * originalPoints.y_points[x])
-    shownPoints_X = [0] * 40
-    shownPoints_Y = [0] * 40
-    i = 0
-    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
-        i = postEditPoints.x_points.index(startingPos_var.get())
-    for x in range(40):
-        try:
-            shownPoints_X[x] = postEditPoints.x_points[i + x]
-            shownPoints_Y[x] = postEditPoints.y_points[i + x]
-        except IndexError:
-            break
-    createGraph(shownPoints_X, shownPoints_Y, "Edited Wave", "Sample", editedWaveCanvas)
+
+    createGraph(postEditPoints.x_points, postEditPoints.y_points, "Edited Wave", "Sample", editedWaveCanvas)
     return
 
 
@@ -443,18 +476,7 @@ def normWave(norm_type="-1"):
             postEditPoints.y_points[x] = fraction
         elif norm_type == "-1":
             postEditPoints.y_points[x] = 2 * fraction - 1
-    shownPoints_X = [0] * 40
-    shownPoints_Y = [0] * 40
-    i = 0
-    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
-        i = postEditPoints.x_points.index(startingPos_var.get())
-    for x in range(40):
-        try:
-            shownPoints_X[x] = postEditPoints.x_points[i + x]
-            shownPoints_Y[x] = postEditPoints.y_points[i + x]
-        except IndexError:
-            break
-    createGraph(shownPoints_X, shownPoints_Y, "Edited Wave", "Sample", editedWaveCanvas)
+    createGraph(postEditPoints.x_points, postEditPoints.y_points, "Edited Wave", "Sample", editedWaveCanvas)
     return
 
 
@@ -489,18 +511,7 @@ def sumClick():
         postEditPoints.x_points[x] = (originalPoints.x_points[x])
         point_sum = point_sum + originalPoints.y_points[x]
         postEditPoints.y_points[x] = point_sum
-    shownPoints_X = [0] * 40
-    shownPoints_Y = [0] * 40
-    i = 0
-    if startingPos_var.get() >= min(postEditPoints.x_points) or startingPos_var.get() < max(postEditPoints.x_points):
-        i = postEditPoints.x_points.index(startingPos_var.get())
-    for x in range(40):
-        try:
-            shownPoints_X[x] = postEditPoints.x_points[i + x]
-            shownPoints_Y[x] = postEditPoints.y_points[i + x]
-        except IndexError:
-            break
-    createGraph(shownPoints_X, shownPoints_Y, "Edited Wave", "Sample", editedWaveCanvas)
+    createGraph(postEditPoints.x_points, postEditPoints.y_points, "Edited Wave", "Sample", editedWaveCanvas)
     return
 
 
@@ -594,17 +605,140 @@ def compareEditedClick():
     SignalSamplesAreEqual("edited")
     return
 
+def QuantizationTest1():
+    file_name = file_var.get()
+    Your_EncodedValues = quantizedPoints.levelsBin
+    Your_QuantizedValues = quantizedPoints.points.y_points
+    expectedEncodedValues=[]
+    expectedQuantizedValues=[]
+    test_failed = 0
+    with open(file_name, 'r') as f:
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        while line:
+            # process line
+            L=line.strip()
+            if len(L.split(' '))==2:
+                L=line.split(' ')
+                V2=str(L[0])
+                V3=float(L[1])
+                expectedEncodedValues.append(V2)
+                expectedQuantizedValues.append(V3)
+                line = f.readline()
+            else:
+                break
+    if( (len(Your_EncodedValues)!=len(expectedEncodedValues)) or (len(Your_QuantizedValues)!=len(expectedQuantizedValues))):
+        line_var.set("QuantizationTest1 Test case failed, your signal have different length from the expected one")
+        print("QuantizationTest1 Test case failed, your signal have different length from the expected one")
+        test_failed = 1
+    if test_failed == 0:
+        for i in range(len(Your_EncodedValues)):
+            if(Your_EncodedValues[i]!=expectedEncodedValues[i]):
+                line_var.set("QuantizationTest1 Test case failed, your EncodedValues have different EncodedValues from the expected one")
+                print("QuantizationTest1 Test case failed, your EncodedValues have different EncodedValues from the expected one") 
+                test_failed = 1
+    if test_failed == 0:
+        for i in range(len(expectedQuantizedValues)):
+            if abs(Your_QuantizedValues[i] - expectedQuantizedValues[i]) < 0.01:
+                continue
+            else:
+                line_var.set("QuantizationTest1 Test case failed, your QuantizedValues have different values from the expected one")
+                print("QuantizationTest1 Test case failed, your QuantizedValues have different values from the expected one") 
+                test_failed = 1
+    
+    # creates a label for the note
+    if test_failed == 0:
+        line_var.set("QuantizationTest1 Test case passed successfully")
+        print("QuantizationTest1 Test case passed successfully")
+    createLabel(line_var.get(), root, 0, 0.45, 0.05, 0.025, 0.55)
+
+
+def QuantizationTest2():
+    file_name = file_var.get()
+    Your_IntervalIndices = quantizedPoints.levels
+    Your_EncodedValues = quantizedPoints.levelsBin
+    Your_QuantizedValues = quantizedPoints.points.y_points
+    Your_SampledError = quantizedPoints.err
+    test_failed = 0
+    expectedIntervalIndices=[]
+    expectedEncodedValues=[]
+    expectedQuantizedValues=[]
+    expectedSampledError=[]
+    with open(file_name, 'r') as f:
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        while line:
+            # process line
+            L=line.strip()
+            if len(L.split(' '))==4:
+                L=line.split(' ')
+                V1=int(L[0])
+                V2=str(L[1])
+                V3=float(L[2])
+                V4=float(L[3])
+                expectedIntervalIndices.append(V1)
+                expectedEncodedValues.append(V2)
+                expectedQuantizedValues.append(V3)
+                expectedSampledError.append(V4)
+                line = f.readline()
+            else:
+                break
+    if(len(Your_IntervalIndices)!=len(expectedIntervalIndices)
+     or len(Your_EncodedValues)!=len(expectedEncodedValues)
+      or len(Your_QuantizedValues)!=len(expectedQuantizedValues)
+      or len(Your_SampledError)!=len(expectedSampledError)):
+        line_var.set("QuantizationTest2 Test case failed, your signal have different length from the expected one")
+        print("QuantizationTest2 Test case failed, your signal have different length from the expected one")
+        test_failed = 1
+    if test_failed == 0:
+        for i in range(len(Your_IntervalIndices)):
+            if(Your_IntervalIndices[i]!=expectedIntervalIndices[i]):
+                line_var.set("QuantizationTest2 Test case failed, your signal have different indicies from the expected one") 
+                print("QuantizationTest2 Test case failed, your signal have different indicies from the expected one") 
+                test_failed = 1
+    if test_failed == 0:
+        for i in range(len(Your_EncodedValues)):
+            if(Your_EncodedValues[i]!=expectedEncodedValues[i]):
+                line_var.set("uantizationTest2 Test case failed, your EncodedValues have different EncodedValues from the expected one") 
+                print("QuantizationTest2 Test case failed, your EncodedValues have different EncodedValues from the expected one") 
+                test_failed = 1
+    if test_failed == 0: 
+        for i in range(len(expectedQuantizedValues)):
+            if abs(Your_QuantizedValues[i] - expectedQuantizedValues[i]) < 0.01:
+                continue
+            else:
+                line_var.set("QuantizationTest2 Test case failed, your QuantizedValues have different values from the expected one") 
+                print("QuantizationTest2 Test case failed, your QuantizedValues have different values from the expected one") 
+                test_failed = 1
+    if test_failed == 0:
+        for i in range(len(expectedSampledError)):
+            if abs(Your_SampledError[i] - expectedSampledError[i]) < 0.01:
+                continue
+            else:
+                line_var.set("QuantizationTest2 Test case failed, your SampledError have different values from the expected one")
+                print("QuantizationTest2 Test case failed, your SampledError have different values from the expected one") 
+                test_failed = 1
+    if test_failed == 0:
+        line_var.set("QuantizationTest2 Test case passed successfully")
+        print("QuantizationTest2 Test case passed successfully")
+    createLabel(line_var.get(), root, 0, 0.45, 0.05, 0.025, 0.55)
+
 
 def compareMenuClick():
     compareCanvas = createCanvas(root, 0.5, 0.5, 0, 0.5)
     createLabel("Compare:", compareCanvas, 1, 0.25, 0.1, 0, 0)
 
-    createLabel("File:", compareCanvas, 0, 0.2, 0.1, 0.05, 0.2)
-    createEntry(file_var, compareCanvas, 0.4, 0.1, 0.25, 0.2)
-    createButton("Browse", browseClick, compareCanvas, 0.2, 0.1, 0.65, 0.2)
-    createButton("Compare OG", compareOriginalClick, compareCanvas, 0.2, 0.1, 0.25, 0.4)
-    createButton("Compare ED", compareEditedClick, compareCanvas, 0.2, 0.1, 0.45, 0.4)
-    createButton("Compare QN", compareOriginalClick, compareCanvas, 0.2, 0.1, 0.65, 0.4)
+    createLabel("File:", compareCanvas, 0, 0.2, 0.1, 0.1, 0.2)
+    createEntry(file_var, compareCanvas, 0.4, 0.1, 0.3, 0.2)
+    createButton("Browse", browseClick, compareCanvas, 0.2, 0.1, 0.7, 0.2)
+    createButton("Compare OG", compareOriginalClick, compareCanvas, 0.2, 0.1, 0.1, 0.4)
+    createButton("Compare ED", compareEditedClick, compareCanvas, 0.2, 0.1, 0.3, 0.4)
+    createButton("QN Test 1", QuantizationTest1, compareCanvas, 0.2, 0.1, 0.5, 0.4)
+    createButton("QN Test 2", QuantizationTest2, compareCanvas, 0.2, 0.1, 0.7, 0.4)
 
 
 def fileExport(wave_type="original"):
@@ -614,7 +748,7 @@ def fileExport(wave_type="original"):
     if wave_type == "original":
         saved_points = originalPoints
     elif wave_type == "edited":
-        saved_points = editedPoints
+        saved_points = postEditPoints
     else:
         return
     string = f"{int(saved_points.signalType)}\n{int(saved_points.isPeriodic)}\n{int(saved_points.samples)}"
@@ -633,12 +767,12 @@ def editedExportClick():
     print("export")
 
 
-def quantizeMenuClick():
-    return
+def quitClick():
+    root.destroy()
 
 
 # Creating Label
-createLabel("Dsp - Section 1", menuCanvas, 1, 0.25, 0.1, 0, 0)
+createLabel("Dsp - Section 1", menuCanvas, 1, 0.25, 0.1, 0.375, 0)
 createLabel("Original Wave:", originalWaveCanvas, 1, 0.25, 0.1, 0, 0)
 createLabel("Edited Wave:", editedWaveCanvas, 1, 0.25, 0.1, 0, 0)
 # Creating Buttons
@@ -649,6 +783,7 @@ createButton("Generate", generateMenuClick, menuCanvas, 0.25, 0.1, 0, 0.3)
 createButton("Quantize", quantizeMenuClick, menuCanvas, 0.25, 0.1, 0, 0.4)
 createButton("Edit", editMenuClick, menuCanvas, 0.25, 0.1, 0, 0.5)
 createButton("Compare", compareMenuClick, menuCanvas, 0.25, 0.1, 0, 0.6)
+createButton("Quit", quitClick, menuCanvas, 0.25, 0.1, 0, 0.7)
 
 # causes app to start and enter a while loop while it is on
 root.mainloop()
