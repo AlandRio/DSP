@@ -33,6 +33,12 @@ class quantPoints:
         self.levels = levels
         self.levelsBin = levelsBin
 
+class freqPoints:
+    def __init__(self,points = [], phasePoints = [], ampPoints = []):
+        self.fundFreq = points,
+        self.phasePoints = phasePoints,
+        self.ampPoints = ampPoints
+
 
 # Creating and defining Root Window for the app
 root = tk.Tk()
@@ -61,6 +67,7 @@ editedPoints = Points()
 editedWave = Wave()
 postEditPoints = Points()
 quantizedPoints = quantPoints()
+convertPoints = freqPoints()
 
 
 # functions to optimize code
@@ -153,13 +160,12 @@ def importFile():
         print(f"Periodic: {originalIsPeriodic}")  # Prints for debugging purposes
         # takes the 3rd line of the file which is number of samples
         samples = int(file.readline())
-        x_ax = [0] * samples  # initializes an empty array with size samples
-        y_ax = [0] * samples  # initializes an empty array with size samples
-        i = 0  # variable used in the while loop incase loop does not find starting position
+        x_ax = []  # initializes an empty array with size samples
+        y_ax = []   # initializes an empty array with size samples
         for x in range(samples):
             temp = file.readline().split(" ")
-            x_ax[x] = int(temp[0])
-            y_ax[x] = float(temp[1])
+            x_ax.append(int(temp[0]))
+            y_ax.append(float(temp[1]))
             print(f"{x_ax[x]} and {y_ax[x]}")
         tempPoints.y_points = y_ax  # puts y-axis points inside the global original points variable
         tempPoints.x_points = x_ax  # puts x axis points inside the global original points variable
@@ -192,10 +198,11 @@ def importMenuClick():
     createLabel("File:", importCanvas, 0, 0.2, 0.1, 0.05, 0.2)
     createEntry(file_var, importCanvas, 0.6, 0.1, 0.25, 0.2)
 
+    createButton("Browse", browseClick, importCanvas, 0.1, 0.1, 0.8, 0.2)
+
     createLabel("Starting Pos:", importCanvas, 0, 0.2, 0.1, 0.05, 0.3)
     createEntry(startingPos_var, importCanvas, 0.65, 0.1, 0.25, 0.3)
-
-    createButton("Browse", browseClick, importCanvas, 0.1, 0.1, 0.8, 0.2)
+    
     createButton("Import", importFromFile, importCanvas, 0.2, 0.1, 0.4, 0.9)
 
 
@@ -727,6 +734,9 @@ def QuantizationTest2():
         print("QuantizationTest2 Test case passed successfully")
     createLabel(line_var.get(), root, 0, 0.45, 0.05, 0.025, 0.55)
 
+def polarTest():
+    return
+
 
 def compareMenuClick():
     compareCanvas = createCanvas(root, 0.5, 0.5, 0, 0.5)
@@ -739,6 +749,7 @@ def compareMenuClick():
     createButton("Compare ED", compareEditedClick, compareCanvas, 0.2, 0.1, 0.3, 0.4)
     createButton("QN Test 1", QuantizationTest1, compareCanvas, 0.2, 0.1, 0.5, 0.4)
     createButton("QN Test 2", QuantizationTest2, compareCanvas, 0.2, 0.1, 0.7, 0.4)
+    createButton("Polar", polarTest, compareCanvas, 0.2, 0.1, 0.1, 0.6)
 
 
 def fileExport(wave_type="original"):
@@ -771,6 +782,133 @@ def quitClick():
     root.destroy()
 
 
+def convertFreq():
+    global originalPoints,convertPoints,postEditPoints
+    amps = []
+    phases = []
+    fundFreqs = []
+    x_points = []
+    y_points = []
+    samp_freq = sampleFreq_var.get()
+    nums = originalPoints.samples
+    fund_freq = (2*np.pi)/(nums*(1/samp_freq))
+    y_points = originalPoints.y_points
+    for x in range(nums):
+        real_sum = 0
+        imaginary_sum = 0
+        for n in range(nums):
+            exponent = (-2j*np.pi*x*n) / nums
+            real_sum = real_sum + y_points[x] * np.cos(exponent)
+            imaginary_sum = imaginary_sum + y_points * np.sin(exponent)
+        real = np.sum(real_sum)
+        imaginary = np.sum(imaginary_sum)
+        amp = np.sqrt(np.pow(real, 2) + np.pow(imaginary,2))
+        phase = np.atan2(imaginary, real)
+        amps.append(amp)
+        phases.append(phase)
+        fundFreqs.append(fund_freq*x)
+        print(f"{x}/{fundFreqs[x]}: amp is {amps[x]} and phase is {phases[x]}")
+    convertPoints.ampPoints = amps
+    convertPoints.fundFreq = fundFreqs
+    convertPoints.phasePoints = phases
+    postEditPoints.x_points = amps
+    postEditPoints.y_points = phases
+            
+
+def phaseGraph():
+    global convertPoints
+    convertFreq()
+    createGraph(convertPoints.fundFreq,convertPoints.phasePoints,"Polar Graph","Frequency",editedWaveCanvas)
+
+
+def ampGraph():
+    global convertPoints
+    convertFreq()
+    createGraph(convertPoints.fundFreq,convertPoints.ampPoints,"Amplitude Graph","Frequency",editedWaveCanvas)
+
+
+def DFTMenu():
+    DFTCanvas = createCanvas(root, 0.5, 0.45, 0, 0.55)
+    createLabel("DFT:", DFTCanvas, 1, 0.25, 0.1, 0, 0)
+
+    createLabel("Sampling Frequency:", DFTCanvas, 0, 0.2, 0.1, 0.25, 0.3)
+    createEntry(sampleFreq_var, DFTCanvas, 0.2, 0.1, 0.5, 0.3)
+
+    createButton("Polar Graph", phaseGraph, DFTCanvas, 0.2, 0.1, 0.25, 0.6)
+    createButton("Amp Graph", ampGraph, DFTCanvas, 0.2, 0.1, 0.5, 0.6)
+
+
+def importFreq():
+    global originalPoints, convertPoints
+    file_path = file_var.get()
+    if(file_path != ""):
+        file = open(file_path)
+        file.readline()
+        file.readline()
+        samples = int(file.readline())
+        print(f"Samples: {samples}")
+        amp_points = []
+        phase_points = []
+        y = []
+        for x in range(samples):
+            temp = file.readline().split(" ")
+            amp_points.append(float(temp[0]))
+            phase_points.append(float(temp[1]))
+        for x in range(samples):
+            real_sum = 0
+            img_sum = 0
+            for n in range(samples):
+                amp = amp_points[n]
+                phase = phase_points[n]
+                real = amp * np.cos(phase)
+                imaginary = amp * np.sin(phase)
+                exponent = 2*np.pi*x*n
+                exponent = exponent/samples
+                real = real * np.cos(exponent) / samples
+                imaginary = imaginary * np.sin(exponent) / samples
+                real_sum = real_sum + real
+                img_sum = img_sum + imaginary
+            real_sum = round(real_sum,8)
+            img_sum = round(img_sum, 8)
+            total = real_sum + img_sum
+            y.append(total)
+        y_points = []
+        x_points = []
+        y_points.append(y[0])
+        for x in range(samples):
+            if x > 0:
+                y_points.append(y[samples-x])
+        for x in range(samples):
+            x_points.append(x)
+            print(f"{x}: {y_points[x]}")
+        originalPoints.x_points = x_points
+        originalPoints.y_points = y_points
+        convertPoints.ampPoints = amp_points
+        convertPoints.phasePoints = phase_points
+        createGraph(x_points,y_points,"IDFT Graph","samples",originalWaveCanvas)
+
+
+def IDFTMenu():
+    IDFTCanvas = createCanvas(root, 0.5, 0.45, 0, 0.55)
+    createLabel("IDFT:", IDFTCanvas, 1, 0.25, 0.1, 0, 0)
+    createLabel("File:", IDFTCanvas, 0, 0.2, 0.1, 0.05, 0.2)
+    createEntry(file_var, IDFTCanvas, 0.6, 0.1, 0.25, 0.2)
+
+    createButton("Browse", browseClick, IDFTCanvas, 0.1, 0.1, 0.8, 0.2)
+    
+    createButton("Import Freq", importFreq, IDFTCanvas, 0.2, 0.1, 0.4, 0.6)
+
+
+
+def convertMenuClick():
+    compareCanvas = createCanvas(root, 0.5, 0.5, 0, 0.5)
+    createLabel("Convert:", compareCanvas, 1, 0.25, 0.1, 0, 0)
+
+    createButton("DFT", DFTMenu, compareCanvas, 0.1, 0.1, 0.5, 0)
+    createButton("IDFT", IDFTMenu, compareCanvas, 0.1, 0.1, 0.6, 0)
+
+
+
 # Creating Label
 createLabel("Dsp - Section 1", menuCanvas, 1, 0.25, 0.1, 0.375, 0)
 createLabel("Original Wave:", originalWaveCanvas, 1, 0.25, 0.1, 0, 0)
@@ -781,9 +919,10 @@ createButton("Export", editedExportClick, editedWaveCanvas, 0.25, 0.1, 0.75, 0)
 createButton("Import", importMenuClick, menuCanvas, 0.25, 0.1, 0, 0.2)
 createButton("Generate", generateMenuClick, menuCanvas, 0.25, 0.1, 0, 0.3)
 createButton("Quantize", quantizeMenuClick, menuCanvas, 0.25, 0.1, 0, 0.4)
-createButton("Edit", editMenuClick, menuCanvas, 0.25, 0.1, 0, 0.5)
-createButton("Compare", compareMenuClick, menuCanvas, 0.25, 0.1, 0, 0.6)
-createButton("Quit", quitClick, menuCanvas, 0.25, 0.1, 0, 0.7)
+createButton("Convert", convertMenuClick, menuCanvas, 0.25, 0.1, 0, 0.5)
+createButton("Edit", editMenuClick, menuCanvas, 0.25, 0.1, 0, 0.6)
+createButton("Compare", compareMenuClick, menuCanvas, 0.25, 0.1, 0, 0.7)
+createButton("Quit", quitClick, menuCanvas, 0.25, 0.1, 0, 0.8)
 
 # causes app to start and enter a while loop while it is on
 root.mainloop()
