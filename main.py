@@ -175,6 +175,24 @@ def importFile():
         return tempPoints
 
 
+def freqFromFile():
+    global originalPoints, convertPoints
+    file_path = file_var.get()
+    if(file_path != ""):
+        file = open(file_path)
+        file.readline()
+        file.readline()
+        samples = int(file.readline())
+        print(f"Samples: {samples}")
+        amp_points = []
+        phase_points = []
+        for x in range(samples):
+            temp = file.readline().split(" ")
+            amp_points.append(float(temp[0]))
+            phase_points.append(float(temp[1]))
+        return amp_points,phase_points,samples
+
+
 def importFromFile():
     global originalPoints
     originalPoints = importFile()
@@ -734,8 +752,67 @@ def QuantizationTest2():
         print("QuantizationTest2 Test case passed successfully")
     createLabel(line_var.get(), root, 0, 0.45, 0.05, 0.025, 0.55)
 
+
+#Use to test the Amplitude of DFT and IDFT
+def SignalComapreAmplitude(SignalInput = [] ,SignalOutput= []):
+    if len(SignalInput) != len(SignalInput):
+        return False
+    else:
+        for i in range(len(SignalInput)):
+            if abs(round(SignalInput[i])-round(SignalOutput[i]))>0.001:
+                return False
+            elif round(SignalInput[i])!=round(SignalOutput[i]):
+                return False
+        return True
+
+
+def RoundPhaseShift(P):
+    while P<0:
+        p+=2*math.pi
+    return float(P%(2*math.pi))
+
+
+#Use to test the PhaseShift of DFT
+def SignalComaprePhaseShift(SignalInput = [] ,SignalOutput= []):
+    if len(SignalInput) != len(SignalInput):
+        return False
+    else:
+        for i in range(len(SignalInput)):
+            A=round(SignalInput[i])
+            B=round(SignalOutput[i])
+            if abs(A-B)>0.0001:
+                return False
+            elif A!=B:
+                return False
+        return True
+
+
 def polarTest():
-    return
+    global convertPoints
+    file_amp_points,file_phase_points,file_samples = freqFromFile()
+    original_amp_points = convertPoints.ampPoints
+    original_phase_points = convertPoints.phasePoints
+
+    isPhaseEqual = SignalComaprePhaseShift(original_phase_points,file_phase_points)
+    isAmpEqual = SignalComapreAmplitude(original_amp_points,file_amp_points)
+
+    if isPhaseEqual == 0 and isAmpEqual == 0:
+        line_var.set("Amp and Phase are not equal.")
+        print("Amp and Phase are not equal.")
+    elif isPhaseEqual == 1 and isAmpEqual == 0:
+        line_var.set("Amp is not Equal but Phase is Equal")
+        print("Amp is not Equal but Phase is Equal")
+    elif isPhaseEqual == 0 and isAmpEqual == 1:
+        line_var.set("Amp is Equal but Phase is not Equal")
+        print("Amp is Equal but Phase is not Equal")
+    elif isPhaseEqual == 1 and isAmpEqual == 1:
+        line_var.set("Freq Test passed succesfully.")
+        print("Freq Test passed succesfully.")
+    else:
+        line_var.set("Error: Something went wrong with freq TEST")
+        print("Error: Something went wrong with freq TEST")
+        return
+    createLabel(line_var.get(), root, 0, 0.45, 0.05, 0.025, 0.55)
 
 
 def compareMenuClick():
@@ -749,7 +826,7 @@ def compareMenuClick():
     createButton("Compare ED", compareEditedClick, compareCanvas, 0.2, 0.1, 0.3, 0.4)
     createButton("QN Test 1", QuantizationTest1, compareCanvas, 0.2, 0.1, 0.5, 0.4)
     createButton("QN Test 2", QuantizationTest2, compareCanvas, 0.2, 0.1, 0.7, 0.4)
-    createButton("Polar", polarTest, compareCanvas, 0.2, 0.1, 0.1, 0.6)
+    createButton("Freq Test", polarTest, compareCanvas, 0.2, 0.1, 0.1, 0.6)
 
 
 def fileExport(wave_type="original"):
@@ -797,9 +874,9 @@ def convertFreq():
         real_sum = 0
         imaginary_sum = 0
         for n in range(nums):
-            exponent = (-2j*np.pi*x*n) / nums
-            real_sum = real_sum + y_points[x] * np.cos(exponent)
-            imaginary_sum = imaginary_sum + y_points * np.sin(exponent)
+            exponent = (-2*np.pi*x*n) / nums
+            real_sum = real_sum + y_points[n] * np.cos(exponent)
+            imaginary_sum = imaginary_sum + y_points[n] * np.sin(exponent)
         real = np.sum(real_sum)
         imaginary = np.sum(imaginary_sum)
         amp = np.sqrt(np.pow(real, 2) + np.pow(imaginary,2))
@@ -839,53 +916,41 @@ def DFTMenu():
 
 
 def importFreq():
-    global originalPoints, convertPoints
-    file_path = file_var.get()
-    if(file_path != ""):
-        file = open(file_path)
-        file.readline()
-        file.readline()
-        samples = int(file.readline())
-        print(f"Samples: {samples}")
-        amp_points = []
-        phase_points = []
-        y = []
-        for x in range(samples):
-            temp = file.readline().split(" ")
-            amp_points.append(float(temp[0]))
-            phase_points.append(float(temp[1]))
-        for x in range(samples):
-            real_sum = 0
-            img_sum = 0
-            for n in range(samples):
-                amp = amp_points[n]
-                phase = phase_points[n]
-                real = amp * np.cos(phase)
-                imaginary = amp * np.sin(phase)
-                exponent = 2*np.pi*x*n
-                exponent = exponent/samples
-                real = real * np.cos(exponent) / samples
-                imaginary = imaginary * np.sin(exponent) / samples
-                real_sum = real_sum + real
-                img_sum = img_sum + imaginary
-            real_sum = round(real_sum,8)
-            img_sum = round(img_sum, 8)
-            total = real_sum + img_sum
-            y.append(total)
-        y_points = []
-        x_points = []
-        y_points.append(y[0])
-        for x in range(samples):
-            if x > 0:
-                y_points.append(y[samples-x])
-        for x in range(samples):
-            x_points.append(x)
-            print(f"{x}: {y_points[x]}")
-        originalPoints.x_points = x_points
-        originalPoints.y_points = y_points
-        convertPoints.ampPoints = amp_points
-        convertPoints.phasePoints = phase_points
-        createGraph(x_points,y_points,"IDFT Graph","samples",originalWaveCanvas)
+    amp_points, phase_points, samples = freqFromFile()
+    y = []
+    for x in range(samples):
+        real_sum = 0
+        img_sum = 0
+        for n in range(samples):
+            amp = amp_points[n]
+            phase = phase_points[n]
+            real = amp * np.cos(phase)
+            imaginary = amp * np.sin(phase)
+            exponent = 2*np.pi*x*n
+            exponent = exponent/samples
+            real = real * np.cos(exponent) / samples
+            imaginary = imaginary * np.sin(exponent) / samples
+            real_sum = real_sum + real
+            img_sum = img_sum + imaginary
+        real_sum = round(real_sum,8)
+        img_sum = round(img_sum, 8)
+        total = real_sum + img_sum
+        y.append(total)
+    y_points = []
+    x_points = []
+    y_points.append(y[0])
+    for x in range(samples):
+        if x > 0:
+            y_points.append(y[samples-x])
+    for x in range(samples):
+        x_points.append(x)
+        print(f"{x}: {y_points[x]}")
+    originalPoints.x_points = x_points
+    originalPoints.y_points = y_points
+    convertPoints.ampPoints = amp_points
+    convertPoints.phasePoints = phase_points
+    
+    createGraph(x_points,y_points,"IDFT Graph","samples",originalWaveCanvas)
 
 
 def IDFTMenu():
