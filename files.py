@@ -51,13 +51,10 @@ def freqFromFile():
 
 def importFromFile():
     shared.originalPoints = importFile()
-    print("before")
     if shared.originalPoints.signalType == 1:
         menu.createGraph(shared.originalPoints.x_points, shared.originalPoints.y_points, "Original Graph", "Frequency", shared.originalWaveCanvas)
     else:
         menu.createGraph(shared.originalPoints.x_points, shared.originalPoints.y_points, "Original Graph", "Sample", shared.originalWaveCanvas)
-        
-    print("after")
 
 
 def browseClick():
@@ -84,16 +81,23 @@ def importMenuClick():
 def fileExport(wave_type="original"):
     path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
     file = open(path, "w")
-    saved_points = points.Points
+    saved_points = points.Points()
     if wave_type == "original":
-        saved_points = points.originalPoints
+        saved_points = shared.originalPoints
     elif wave_type == "edited":
-        saved_points = points.postEditPoints
+        saved_points = shared.postEditPoints
     else:
         return
+    i = 0
+    points_x = shared.originalPoints.x_points
+    if shared.startingPos_var.get() >= min(points_x) or shared.startingPos_var.get() < max(points_x):
+        i = points_x.index(shared.startingPos_var.get())
     string = f"{int(saved_points.signalType)}\n{int(saved_points.isPeriodic)}\n{int(saved_points.samples)}"
-    for x in range(saved_points.samples):
-        string = string + f"\n{int(points.originalPoints.x_points[x])} {float(points.originalPoints.y_points[x])}"
+    for x in range(shared.export_var.get()):
+        try:
+            string = string + f"\n{int(saved_points.x_points[i+x])} {float(saved_points.y_points[i+x])}"
+        except IndexError:
+            break
     file.write(string)
 
 

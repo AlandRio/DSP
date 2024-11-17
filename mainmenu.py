@@ -18,6 +18,13 @@ def swapClick():
     originalWave = shared.originalWave
     editedPoints = shared.postEditPoints
     editedWave = shared.editedWave
+    shared.originalPoints = editedPoints
+    shared.originalWave = editedWave
+    shared.postEditPoints = originalPoints
+    shared.editedWave = originalWave
+
+    menu.createGraph(shared.originalPoints.x_points, shared.originalPoints.y_points, "Original Wave", "Sample", shared.originalWaveCanvas)
+    menu.createGraph(shared.postEditPoints.x_points, shared.postEditPoints.y_points, "Edited Wave", "Sample", shared.editedWaveCanvas)
 
 
 def createMain():
@@ -43,7 +50,13 @@ def createMain():
     menu.createButton("Export", originalExportClick, shared.originalWaveCanvas, 0.25, 0.1, 0.75, 0)
     menu.createButton("Export", editedExportClick, shared.editedWaveCanvas, 0.25, 0.1, 0.75, 0)
 
-    menu.createButton("Swap Graphs", swapClick, shared.menuCanvas, 0.25, 0.1, 0.75, 0)
+    menu.createButton("Swap Graphs", swapClick, shared.menuCanvas, 0.25, 0.1, 0.75, 0.55)
+
+    shared.export_var.set(40)
+    menu.createLabel("How many to export:", shared.menuCanvas, 0, 0.25, 0.1, 0.65, 0.2)
+    menu.createEntry(shared.export_var,shared.menuCanvas, 0.1, 0.1, 0.895, 0.2)
+    menu.createLabel("Starting var to export:", shared.menuCanvas, 0, 0.25, 0.1, 0.65, 0.3)
+    menu.createEntry(shared.startingPos_var,shared.menuCanvas, 0.1, 0.1, 0.895, 0.3)
 
     menu.createButton("Import", importMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.2)
     menu.createButton("Generate", generateMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.3)

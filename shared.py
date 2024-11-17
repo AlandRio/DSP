@@ -18,11 +18,11 @@ originalFunctionString = tk.StringVar()
 line_var = tk.StringVar()
 quantype_var = tk.StringVar()
 quanum_var = tk.IntVar()
+export_var = tk.IntVar()
 
 # Defining Global Objects for Original Graph and Edited Graph
 originalPoints = points.Points()
 originalWave = points.Wave()
-editedPoints = points.Points()
 editedWave = points.Wave()
 postEditPoints = points.Points()
 quantizedPoints = points.quantPoints()

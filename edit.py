@@ -3,18 +3,23 @@ import points as points
 import shared as shared
 import menu as menu
 
+editedPoints = points.Points()
+
 def generateEditedWaveClick():
+    global editedPoints
     shared.editedWave = points.Wave(shared.type_var.get(), shared.amp_var.get(), shared.theta_var.get(), shared.sampleFreq_var.get(), shared.freq_var.get())
-    shared.editedPoints = points.generatePoints(shared.editedWave, shared.startingPos_var.get())
+    editedPoints = points.generatePoints(shared.editedWave, shared.startingPos_var.get())
 
 
 def addImportWaveClick():
-    shared.editedPoints = importFile()
+    global editedPoints
+    editedPoints = importFile()
 
 
 def addSubEditWave(math_type="add"):
-    minimum_point = min(min(shared.editedPoints.x_points), min(shared.originalPoints.x_points))
-    maximum_point = max(max(shared.editedPoints.x_points), max(shared.originalPoints.x_points))
+    global editedPoints
+    minimum_point = min(min(editedPoints.x_points), min(shared.originalPoints.x_points))
+    maximum_point = max(max(editedPoints.x_points), max(shared.originalPoints.x_points))
     total_samples = int(maximum_point - minimum_point) + 1
     print(f"total: {total_samples}")
     shared.postEditPoints.x_points = [0] * total_samples
@@ -26,15 +31,15 @@ def addSubEditWave(math_type="add"):
         flag_found = 0
         for y in range(total_samples):
             try:
-                if shared.editedPoints.x_points[z] == i:
+                if editedPoints.x_points[z] == i:
                     if shared.originalPoints.x_points[y] == i:
                         if math_type == "add":
-                            shared.postEditPoints.x_points[x] = int(shared.editedPoints.x_points[z])
-                            shared.postEditPoints.y_points[x] = shared.editedPoints.y_points[z] + shared.originalPoints.y_points[y]
+                            shared.postEditPoints.x_points[x] = int(editedPoints.x_points[z])
+                            shared.postEditPoints.y_points[x] = editedPoints.y_points[z] + shared.originalPoints.y_points[y]
                             flag_found = 1
                         elif math_type == "sub":
-                            shared.postEditPoints.x_points[x] = int(shared.editedPoints.x_points[z])
-                            shared.postEditPoints.y_points[x] = shared.editedPoints.y_points[z] - shared.originalPoints.y_points[y]
+                            shared.postEditPoints.x_points[x] = int(editedPoints.x_points[z])
+                            shared.postEditPoints.y_points[x] = editedPoints.y_points[z] - shared.originalPoints.y_points[y]
                             flag_found = 1
                 elif shared.originalPoints.x_points[y] == i:
                     shared.postEditPoints.x_points[x] = int(shared.originalPoints.x_points[y])
@@ -44,14 +49,14 @@ def addSubEditWave(math_type="add"):
                 break
         try:
             if flag_found == 0:
-                if shared.editedPoints.x_points[x] == i:
-                    shared.postEditPoints.x_points[x] = int(shared.editedPoints.x_points[z])
-                    shared.postEditPoints.y_points[x] = shared.editedPoints.y_points[z]
+                if editedPoints.x_points[x] == i:
+                    shared.postEditPoints.x_points[x] = int(editedPoints.x_points[z])
+                    shared.postEditPoints.y_points[x] = editedPoints.y_points[z]
             print(f"{shared.postEditPoints.x_points[x]} and {shared.postEditPoints.y_points[x]}")
         except IndexError:
             break
         z = z + 1
-        if z > shared.editedPoints.samples:
+        if z > editedPoints.samples:
             z = 0
         x = x + 1
         i = i + 1
