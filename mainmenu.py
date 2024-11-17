@@ -7,10 +7,18 @@ from generate import generateMenuClick
 from files import editedExportClick, importMenuClick, originalExportClick
 import menu as menu
 import shared as shared
-from time_domain import editMenuClick
+from edit import editMenuClick
+from time_domain import timeMenuClick
 
 def quitClick():
     shared.root.destroy()
+
+def swapClick():
+    originalPoints = shared.originalPoints
+    originalWave = shared.originalWave
+    editedPoints = shared.postEditPoints
+    editedWave = shared.editedWave
+
 
 def createMain():
     # Creating and defining Root Window for the app
@@ -34,10 +42,14 @@ def createMain():
     # Creating Buttons
     menu.createButton("Export", originalExportClick, shared.originalWaveCanvas, 0.25, 0.1, 0.75, 0)
     menu.createButton("Export", editedExportClick, shared.editedWaveCanvas, 0.25, 0.1, 0.75, 0)
+
+    menu.createButton("Swap Graphs", swapClick, shared.menuCanvas, 0.25, 0.1, 0.75, 0)
+
     menu.createButton("Import", importMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.2)
     menu.createButton("Generate", generateMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.3)
     menu.createButton("Quantize", quantizeMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.4)
-    menu.createButton("Convert", convertMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.5)
-    menu.createButton("Edit", editMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.6)
-    menu.createButton("Compare", compareMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.7)
-    menu.createButton("Quit", quitClick, shared.menuCanvas, 0.25, 0.1, 0, 0.8)
+    menu.createButton("Frequency Domain", convertMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.5)
+    menu.createButton("Time Domain", timeMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.6)
+    menu.createButton("Edit", editMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.7)
+    menu.createButton("Compare", compareMenuClick, shared.menuCanvas, 0.25, 0.1, 0, 0.8)
+    menu.createButton("Quit", quitClick, shared.menuCanvas, 0.25, 0.1, 0, 0.9)

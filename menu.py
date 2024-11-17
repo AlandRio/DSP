@@ -48,8 +48,10 @@ def createGraph(points_x, points_y, graph_label, x_label, canvas):
     
     fig, ax = plt.subplots()  # creates a figure in fig and sub-plots in ax
     # plots the graph using the original points object
-    ax.scatter(shownPoints_X, shownPoints_Y, color="darkgreen")
-    ax.axhline(y=0, color='black', linewidth=0.8)
+    ax.stem(shownPoints_X, shownPoints_Y,linefmt='g--',markerfmt="go",basefmt="none")
+    ax.axhline(y=0, color='white', linewidth=0.8)
+    # if shared.startingPos_var.get() < 40 or shared.startingPos_var.get() > 40:
+    #     ax.axvline(x=0, color='white', linewidth=0.8)
     ax.set_title(graph_label)
     ax.set_xlabel(x_label)
     ax.set_ylabel("Amplitude")

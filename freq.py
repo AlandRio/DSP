@@ -1,7 +1,7 @@
 import math as math
 
 import numpy as np
-from files import freqFromFile
+from files import browseClick, freqFromFile
 import points as points
 import shared as shared
 import menu as menu
@@ -163,15 +163,18 @@ def IDFTMenu():
     menu.createLabel("File:", IDFTCanvas, 0, 0.2, 0.1, 0.05, 0.2)
     menu.createEntry(shared.file_var, IDFTCanvas, 0.6, 0.1, 0.25, 0.2)
 
-    menu.createButton("Browse", shared.browseClick, IDFTCanvas, 0.1, 0.1, 0.8, 0.2)
+    menu.createButton("Browse", browseClick, IDFTCanvas, 0.1, 0.1, 0.8, 0.2)
     
     menu.createButton("Import Freq", importFreq, IDFTCanvas, 0.2, 0.1, 0.4, 0.6)
 
+def DCTMenu():
+    DCTCanvas = menu.createCanvas(shared.root, 0.5, 0.45, 0, 0.55)
 
 
 def convertMenuClick():
     compareCanvas = menu.createCanvas(shared.root, 0.5, 0.5, 0, 0.5)
     menu.createLabel("Convert:", compareCanvas, 1, 0.25, 0.1, 0, 0)
 
-    menu.createButton("DFT", DFTMenu, compareCanvas, 0.1, 0.1, 0.5, 0)
-    menu.createButton("IDFT", IDFTMenu, compareCanvas, 0.1, 0.1, 0.6, 0)
+    menu.createButton("DFT", DFTMenu, compareCanvas, 0.1, 0.1, 0.4, 0)
+    menu.createButton("IDFT", IDFTMenu, compareCanvas, 0.1, 0.1, 0.5, 0)
+    menu.createButton("DCT", DCTMenu, compareCanvas, 0.1, 0.1, 0.5, 0)
