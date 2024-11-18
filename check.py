@@ -253,6 +253,57 @@ def polarTest():
         return
     menu.createLabel(shared.line_var.get(), shared.root, 0, 0.45, 0.05, 0.025, 0.55)
 
+def Shift_Fold_Signal():
+    file_name = shared.file_var.get()
+    Your_indices = shared.postEditPoints.x_points
+    Your_samples = shared.postEditPoints.y_points      
+    expected_indices=[]
+    expected_samples=[]
+    with open(file_name, 'r') as f:
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        while line:
+            # process line
+            L=line.strip()
+            if len(L.split(' '))==2:
+                L=line.split(' ')
+                V1=int(L[0])
+                V2=float(L[1])
+                expected_indices.append(V1)
+                expected_samples.append(V2)
+                line = f.readline()
+            else:
+                break
+    print("Current Output Test file is: ")
+    print(file_name)
+    print("\n")
+    isCorrect = 1
+    if (len(expected_samples)!=len(Your_samples)) and (len(expected_indices)!=len(Your_indices)):
+        shared.line_var.set("Shift_Fold_Signal Test case failed, your signal have different length from the expected one")
+        print("Shift_Fold_Signal Test case failed, your signal have different length from the expected one")
+        isCorrect = 0
+    else:
+        for i in range(len(Your_indices)):
+            if(Your_indices[i]!=expected_indices[i]):
+                shared.line_var.set("Shift_Fold_Signal Test case failed, your signal have different indicies from the expected one")
+                print("Shift_Fold_Signal Test case failed, your signal have different indicies from the expected one") 
+                isCorrect = 0
+                break
+        for i in range(len(expected_samples)):
+            if abs(Your_samples[i] - expected_samples[i]) < 0.01:
+                continue
+            else:
+                shared.line_var.set("Shift_Fold_Signal Test case failed, your signal have different values from the expected one")
+                print("Shift_Fold_Signal Test case failed, your signal have different values from the expected one") 
+                isCorrect = 0
+                break
+    if isCorrect == 1:
+        shared.line_var.set("Shift_Fold_Signal Test case passed successfully")
+        print("Shift_Fold_Signal Test case passed successfully")
+    menu.createLabel(shared.line_var.get(), shared.root, 0, 0.45, 0.05, 0.025, 0.55)
+
 
 def compareMenuClick():
     compareCanvas = menu.createCanvas(shared.root, 0.5, 0.5, 0, 0.5)
@@ -266,3 +317,4 @@ def compareMenuClick():
     menu.createButton("QN Test 1", QuantizationTest1, compareCanvas, 0.2, 0.1, 0.5, 0.4)
     menu.createButton("QN Test 2", QuantizationTest2, compareCanvas, 0.2, 0.1, 0.7, 0.4)
     menu.createButton("Freq Test", polarTest, compareCanvas, 0.2, 0.1, 0.1, 0.6)
+    menu.createButton("Shift/Fold Test", Shift_Fold_Signal, compareCanvas, 0.2, 0.1, 0.3, 0.6)

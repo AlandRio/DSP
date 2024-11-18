@@ -38,7 +38,10 @@ def createGraph(points_x, points_y, graph_label, x_label, canvas):
     shownPoints_Y = []
     i = 0
     if shared.startingPos_var.get() >= min(points_x) or shared.startingPos_var.get() < max(points_x):
-        i = points_x.index(shared.startingPos_var.get())
+        try:
+            i = points_x.index(shared.startingPos_var.get())
+        except ValueError:
+            i = 0
     for x in range(40):
         try:
             shownPoints_X.append(points_x[i + x])
