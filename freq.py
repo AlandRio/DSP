@@ -167,8 +167,35 @@ def IDFTMenu():
     
     menu.createButton("Import Freq", importFreq, IDFTCanvas, 0.2, 0.1, 0.4, 0.6)
 
+
+def DCTGraph():
+    new_points = []
+    samples = len(shared.originalPoints.x_points)
+    normalize = np.sqrt(2/samples)
+    for k in range(samples):
+        new_point = 0
+        inside_cos = 0
+        for n in range(samples):
+            inside_cos = (np.pi/(4*samples)) * (2*n - 1) * (2*k-1)
+            inside_cos = np.cos(inside_cos)
+            new_point += shared.originalPoints.y_points[n] * inside_cos
+        new_point = round(new_point * normalize,9)
+        print(f"Point at {k}: {new_point}")
+        new_points.append(new_point)
+    print("\n")
+    shared.postEditPoints.x_points = shared.originalPoints.x_points
+    shared.postEditPoints.y_points = new_points 
+    menu.createGraph(shared.postEditPoints.x_points,shared.postEditPoints.y_points,"DCT Graph","samples",shared.editedWaveCanvas)
+
+
 def DCTMenu():
     DCTCanvas = menu.createCanvas(shared.root, 0.5, 0.45, 0, 0.55)
+    menu.createLabel("DCT:", DCTCanvas, 1, 0.25, 0.1, 0, 0)
+
+    menu.createLabel("Starting Position:", DCTCanvas, 0, 0.2, 0.1, 0.25, 0.3)
+    menu.createEntry(shared.startingPos_var, DCTCanvas, 0.2, 0.1, 0.5, 0.3)
+
+    menu.createButton("DCT", DCTGraph, DCTCanvas, 0.2, 0.1, 0.25, 0.6)
 
 
 def convertMenuClick():
@@ -177,4 +204,4 @@ def convertMenuClick():
 
     menu.createButton("DFT", DFTMenu, compareCanvas, 0.1, 0.1, 0.4, 0)
     menu.createButton("IDFT", IDFTMenu, compareCanvas, 0.1, 0.1, 0.5, 0)
-    menu.createButton("DCT", DCTMenu, compareCanvas, 0.1, 0.1, 0.5, 0)
+    menu.createButton("DCT", DCTMenu, compareCanvas, 0.1, 0.1, 0.6, 0)

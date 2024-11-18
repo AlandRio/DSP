@@ -24,6 +24,7 @@ def importFile():
             x_ax.append(int(temp[0]))
             y_ax.append(float(temp[1]))
             print(f"{x_ax[x]} and {y_ax[x]}")
+        print("\n")
         tempPoints.y_points = y_ax  # puts y-axis points inside the global original points variable
         tempPoints.x_points = x_ax  # puts x axis points inside the global original points variable
         tempPoints.isPeriodic = originalIsPeriodic  # puts periodic flag inside the global original points variable
