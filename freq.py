@@ -73,7 +73,7 @@ def convertFreq():
     fundFreqs = []
     y_points = []
     samp_freq = shared.sampleFreq_var.get()
-    nums = shared.originalPoints.samples
+    nums = len(shared.originalPoints.x_points)
     fund_freq = (2*np.pi)/(nums*(1/samp_freq))
     y_points = shared.originalPoints.y_points
     for x in range(nums):
@@ -87,6 +87,8 @@ def convertFreq():
         imaginary = np.sum(imaginary_sum)
         amp = np.sqrt(np.pow(real, 2) + np.pow(imaginary,2))
         phase = np.atan2(imaginary, real)
+        if shared.remove_DC_var.get() != 0 and x == 0:
+            amp = 0
         amps.append(amp)
         phases.append(phase)
         fundFreqs.append(fund_freq*x)
@@ -114,6 +116,8 @@ def DFTMenu():
 
     menu.createLabel("Sampling Frequency:", DFTCanvas, 0, 0.2, 0.1, 0.25, 0.3)
     menu.createEntry(shared.sampleFreq_var, DFTCanvas, 0.2, 0.1, 0.5, 0.3)
+    menu.createLabel("Remove DC?:", DFTCanvas, 0, 0.2, 0.1, 0.25, 0.4)
+    menu.createCheck(shared.remove_DC_var,1,0,DFTCanvas,0.5,0.4)
 
     menu.createButton("Polar Graph", phaseGraph, DFTCanvas, 0.2, 0.1, 0.25, 0.6)
     menu.createButton("Amp Graph", ampGraph, DFTCanvas, 0.2, 0.1, 0.5, 0.6)

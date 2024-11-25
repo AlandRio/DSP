@@ -304,6 +304,46 @@ def Shift_Fold_Signal():
         print("Shift_Fold_Signal Test case passed successfully")
     menu.createLabel(shared.line_var.get(), shared.root, 0, 0.45, 0.05, 0.025, 0.55)
 
+def ConvTest(): 
+    """
+    Test inputs
+    InputIndicesSignal1 =[-2, -1, 0, 1]
+    InputSamplesSignal1 = [1, 2, 1, 1 ]
+    
+    InputIndicesSignal2=[0, 1, 2, 3, 4, 5 ]
+    InputSamplesSignal2 = [ 1, -1, 0, 0, 1, 1 ]
+    """
+    Your_indices = shared.postEditPoints.x_points
+    Your_samples = shared.postEditPoints.y_points
+    expected_indices=[-2, -1, 0, 1, 2, 3, 4, 5, 6]
+    expected_samples = [1, 1, -1, 0, 0, 3, 3, 2, 1 ]
+
+    correct = 1
+    if (len(expected_samples)!=len(Your_samples)) and (len(expected_indices)!=len(Your_indices)):
+        shared.line_var.set("Conv Test case failed, your signal have different length from the expected one")
+        print("Conv Test case failed, your signal have different length from the expected one")
+        correct = 0
+    for i in range(len(Your_indices)):
+        if(Your_indices[i]!=expected_indices[i]):
+            shared.line_var.set("Conv Test case failed, your signal have different indicies from the expected one")
+            print("Conv Test case failed, your signal have different indicies from the expected one") 
+            correct = 0
+            break
+    for i in range(len(expected_samples)):
+        if abs(Your_samples[i] - expected_samples[i]) < 0.01:
+            continue
+        else:
+            shared.line_var.set("Conv Test case failed, your signal have different values from the expected one")
+            print("Conv Test case failed, your signal have different values from the expected one") 
+            correct = 0
+            break
+    
+    if (correct == 1):
+        shared.line_var.set("Conv Test case passed successfully")
+        print("Conv Test case passed successfully")
+    menu.createLabel(shared.line_var.get(), shared.root, 0, 0.45, 0.05, 0.025, 0.55)
+
+
 
 def compareMenuClick():
     compareCanvas = menu.createCanvas(shared.root, 0.5, 0.5, 0, 0.5)
@@ -318,3 +358,4 @@ def compareMenuClick():
     menu.createButton("QN Test 2", QuantizationTest2, compareCanvas, 0.2, 0.1, 0.7, 0.4)
     menu.createButton("Freq Test", polarTest, compareCanvas, 0.2, 0.1, 0.1, 0.6)
     menu.createButton("Shift/Fold Test", Shift_Fold_Signal, compareCanvas, 0.2, 0.1, 0.3, 0.6)
+    menu.createButton("Conv Test", ConvTest, compareCanvas, 0.2, 0.1, 0.5, 0.6)

@@ -14,14 +14,14 @@ def quitClick():
     shared.root.destroy()
 
 def swapClick():
-    originalPoints = shared.originalPoints
-    originalWave = shared.originalWave
-    editedPoints = shared.postEditPoints
-    editedWave = shared.editedWave
-    shared.originalPoints = editedPoints
-    shared.originalWave = editedWave
-    shared.postEditPoints = originalPoints
-    shared.editedWave = originalWave
+    originalPointsVar = shared.originalPoints
+    originalWaveVar = shared.originalWave
+    editedPointsVar = shared.postEditPoints
+    editedWaveVar = shared.editedWave
+    shared.originalPoints = editedPointsVar
+    shared.originalWave = editedWaveVar
+    shared.postEditPoints = originalPointsVar
+    shared.editedWave = originalWaveVar
 
     menu.createGraph(shared.originalPoints.x_points, shared.originalPoints.y_points, "Original Wave", "Sample", shared.originalWaveCanvas)
     menu.createGraph(shared.postEditPoints.x_points, shared.postEditPoints.y_points, "Edited Wave", "Sample", shared.editedWaveCanvas)
