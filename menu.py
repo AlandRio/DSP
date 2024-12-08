@@ -4,20 +4,29 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import shared as shared
 
+bg = tk.StringVar()
+fg = tk.StringVar()
+
+bg.set("black")
+fg.set("green")
+
 def createCanvas(canvas, relwidth, relheight, relx, rely):
     width = shared.root.winfo_width()
     height = shared.root.winfo_height()
-    canvas = tk.Canvas(canvas, width=width, height=height, highlightthickness=2, highlightbackground="green")
-    canvas.configure(bg="black")
+    canvas = tk.Canvas(canvas, width=width, height=height, highlightthickness=2, highlightbackground=fg.get())
+    canvas.configure(bg=bg.get())
     canvas.place(relwidth=relwidth, relheight=relheight, relx=relx, rely=rely)
+    shared.canvases.append(canvas)
     return canvas
 
 
 def createLabel(label, canvas, highlight, relwidth, relheight, relx, rely):
-    originalFunctionLabel = tk.Label(canvas, text=label, fg="green", bg="black")
+    label = tk.Label(canvas, text=label, fg=fg.get(), bg=bg.get())
+    shared.labels.append(label)
     if highlight == 1:
-        originalFunctionLabel.configure(highlightthickness=2, highlightbackground="green")
-    originalFunctionLabel.place(relwidth=relwidth, relheight=relheight, relx=relx, rely=rely)
+        label.configure(highlightthickness=2, highlightbackground=fg.get())
+        shared.high_labels.append(label)
+    label.place(relwidth=relwidth, relheight=relheight, relx=relx, rely=rely)
 
 
 def createEntry(var, canvas, relwidth, relheight, relx, rely):
@@ -26,11 +35,13 @@ def createEntry(var, canvas, relwidth, relheight, relx, rely):
 
 
 def createButton(label, func, canvas, relwidth, relheight, relx, rely):
-    Border = tk.Frame(canvas, bd=0, highlightthickness=2, highlightcolor="green", highlightbackground="green")
+    Border = tk.Frame(canvas, bd=0, highlightthickness=2, highlightcolor=fg.get(), highlightbackground=fg.get())
     Button = tk.Button(Border, text=label, command=func, width='20')
-    Button.configure(fg="green", bg="black", bd=0, borderwidth=0)
+    Button.configure(fg=fg.get(), bg=bg.get(), bd=0, borderwidth=0)
     Border.place(relwidth=relwidth, relheight=relheight, relx=relx, rely=rely)
     Button.place(relwidth=1, relheight=1, relx=0, rely=0)
+    shared.borders.append(Border)
+    shared.buttons.append(Button)
 
 
 def createGraph(points_x, points_y, graph_label, x_label, canvas):
@@ -52,7 +63,7 @@ def createGraph(points_x, points_y, graph_label, x_label, canvas):
     fig, ax = plt.subplots()  # creates a figure in fig and sub-plots in ax
     # plots the graph using the original points object
     ax.stem(shownPoints_X, shownPoints_Y,linefmt='g--',markerfmt="go",basefmt="none")
-    ax.axhline(y=0, color='white', linewidth=0.8)
+    ax.axhline(y=0, color='green', linewidth=0.8)
     # if shared.startingPos_var.get() < 40 or shared.startingPos_var.get() > 40:
     #     ax.axvline(x=0, color='white', linewidth=0.8)
     ax.set_title(graph_label)
@@ -66,6 +77,6 @@ def createGraph(points_x, points_y, graph_label, x_label, canvas):
 
 
 def createCheck(var,onvalue,offvalue,canvas,relx,rely):
-    check = tk.Checkbutton(canvas, variable=var, onvalue=onvalue, offvalue=offvalue, bg="black")
+    check = tk.Checkbutton(canvas, variable=var, onvalue=onvalue, offvalue=offvalue, bg=bg.get())
     check.place(relwidth=0.05, relheight=0.1, relx=relx, rely=rely)
 

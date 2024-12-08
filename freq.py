@@ -87,12 +87,13 @@ def convertFreq():
         imaginary = np.sum(imaginary_sum)
         amp = np.sqrt(np.pow(real, 2) + np.pow(imaginary,2))
         phase = np.atan2(imaginary, real)
-        if shared.remove_DC_var.get() != 0 and x == 0:
-            amp = 0
         amps.append(amp)
         phases.append(phase)
         fundFreqs.append(fund_freq*x)
         print(f"{x}/{fundFreqs[x]}: amp is {amps[x]} and phase is {phases[x]}")
+    if shared.remove_DC_var.get() != 0:
+        amps[0] = 0
+        phases[0] = 0
     shared.convertPoints.ampPoints = amps
     shared.convertPoints.fundFreq = fundFreqs
     shared.convertPoints.phasePoints = phases
@@ -117,14 +118,15 @@ def DFTMenu():
     menu.createLabel("Sampling Frequency:", DFTCanvas, 0, 0.2, 0.1, 0.25, 0.3)
     menu.createEntry(shared.sampleFreq_var, DFTCanvas, 0.2, 0.1, 0.5, 0.3)
     menu.createLabel("Remove DC?:", DFTCanvas, 0, 0.2, 0.1, 0.25, 0.4)
+    shared.remove_DC_var.set(0)
     menu.createCheck(shared.remove_DC_var,1,0,DFTCanvas,0.5,0.4)
 
     menu.createButton("Polar Graph", phaseGraph, DFTCanvas, 0.2, 0.1, 0.25, 0.6)
     menu.createButton("Amp Graph", ampGraph, DFTCanvas, 0.2, 0.1, 0.5, 0.6)
 
 
-def importFreq():
-    amp_points, phase_points, samples = freqFromFile()
+
+def idftFreq(amp_points, phase_points, samples):
     y = []
     for x in range(samples):
         real_sum = 0
@@ -146,19 +148,26 @@ def importFreq():
         y.append(total)
     y_points = []
     x_points = []
-    y_points.append(y[0])
+    y_points.append(round(y[0],4))
     for x in range(samples):
         if x > 0:
-            y_points.append(y[samples-x])
+            y_points.append(round(y[samples-x],4))
     for x in range(samples):
         x_points.append(x)
         print(f"{x}: {y_points[x]}")
     shared.originalPoints.x_points = x_points
     shared.originalPoints.y_points = y_points
-    shared.convertPoints.ampPoints = amp_points
-    shared.convertPoints.phasePoints = phase_points
     
     menu.createGraph(x_points,y_points,"IDFT Graph","samples",shared.originalWaveCanvas)
+
+
+def importFreq():
+    amp_points, phase_points, samples = freqFromFile()
+    idftFreq(amp_points,phase_points,samples)
+
+
+def idftClick():
+    idftFreq(shared.postEditPoints.x_points,shared.postEditPoints.y_points,len(shared.convertPoints.ampPoints))
 
 
 def IDFTMenu():
@@ -169,7 +178,8 @@ def IDFTMenu():
 
     menu.createButton("Browse", browseClick, IDFTCanvas, 0.1, 0.1, 0.8, 0.2)
     
-    menu.createButton("Import Freq", importFreq, IDFTCanvas, 0.2, 0.1, 0.4, 0.6)
+    menu.createButton("Import Freq", importFreq, IDFTCanvas, 0.2, 0.1, 0.2, 0.6)
+    menu.createButton("IDFT", importFreq, IDFTCanvas, 0.2, 0.1, 0.6, 0.6)
 
 
 def DCTGraph():

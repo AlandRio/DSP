@@ -161,8 +161,8 @@ def convolveClick():
     first = shared.originalPoints
     second = importFile()
     new_points = np.convolve(first.y_points,second.y_points,mode="full")
-    min_point = min(min(first.x_points),min(second.x_points))
-    max_point = min_point + len(first.x_points) + len(second.x_points) - 1
+    min_point = min(first.x_points) + min(second.x_points)
+    max_point = max(first.x_points) + max(second.x_points)
     shared.postEditPoints.x_points = range(min_point,max_point)
     shared.postEditPoints.y_points = new_points
     menu.createGraph(shared.postEditPoints.x_points, shared.postEditPoints.y_points, "Convolved Wave", "Sample", shared.editedWaveCanvas)
