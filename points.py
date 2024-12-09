@@ -65,3 +65,17 @@ def generatePoints(wave, startingPos):
     points = Points(pointsX, pointsY)  # adds the values into a class for easier management
     return points  # returns an array of points for graph
 
+def convolvePoints(first_x = [],first_y = [],second_x = [],second_y = []):
+    new_points = []
+    min_point = first_x[0] + second_x[0]
+    max_point = first_x[-1] + second_x[-1]
+    for i in range(len(first_y) + len(second_y) - 1):
+        conv_sum = 0
+        for j in range(len(first_x)):
+                if i-j >= 0 and i-j < len(second_y):
+                    conv_sum = conv_sum + first_y[j] * second_y[i - j]
+        new_points.append(conv_sum)
+    conv_points = Points()
+    conv_points.x_points = list(range(int(min_point),int(max_point)+ 1))
+    conv_points.y_points = new_points
+    return conv_points

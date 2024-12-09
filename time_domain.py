@@ -2,6 +2,7 @@ import numpy as np
 from files import browseClick, importFile
 import menu as menu
 import shared as shared
+import points as points
 
 def sharpen(type = 1):
     sharpenedPoints = []
@@ -157,14 +158,13 @@ def foldMenuClick():
     menu.createButton("Fold", foldClick, sharpenCanvas, 0.2, 0.2, 0.4, 0.6)
 
 
+
+
+
 def convolveClick():
     first = shared.originalPoints
     second = importFile()
-    new_points = np.convolve(first.y_points,second.y_points,mode="full")
-    min_point = min(first.x_points) + min(second.x_points)
-    max_point = max(first.x_points) + max(second.x_points)
-    shared.postEditPoints.x_points = range(min_point,max_point)
-    shared.postEditPoints.y_points = new_points
+    shared.postEditPoints = points.convolvePoints(first.x_points,first.y_points,second.x_points,second.y_points)
     menu.createGraph(shared.postEditPoints.x_points, shared.postEditPoints.y_points, "Convolved Wave", "Sample", shared.editedWaveCanvas)
 
 

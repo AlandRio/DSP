@@ -11,20 +11,12 @@ new_new_final_h_coef_time = []
 filterCanvas = tk.Canvas()
 resampleCanvas = tk.Canvas()
 
-def convolve():
-    # x_signal1 = shared.postEditPoints.x_points
-    # y_signal1 = shared.postEditPoints.y_points
-    # x_signal2 = new_new_final_h_coef_time
-    # y_signal2 = new_new_final_h_coef
+def convolveClick():
     first = shared.postEditPoints.y_points
     first_x = shared.postEditPoints.x_points
     second = new_new_final_h_coef
     second_x = new_new_final_h_coef_time
-    new_points = np.convolve(first,second,mode="full")
-    min_point = min(first_x) + min(second_x)
-    max_point = max(first_x) + max(second_x)
-    shared.postEditPoints.x_points = range(int(min_point),int(max_point))
-    shared.postEditPoints.y_points = new_points
+    shared.postEditPoints= points.convolvePoints(first_x,first,second_x,second)
     menu.createGraph(shared.postEditPoints.x_points, shared.postEditPoints.y_points, "Convolved Wave", "Sample", shared.editedWaveCanvas)
 
 
@@ -159,7 +151,7 @@ def firMenuClick():
     global filterCanvas
     filterCanvas = menu.createCanvas(shared.root, 0.5, 0.45, 0, 0.55)
     menu.createLabel("Filter:", filterCanvas, 1, 0.25, 0.1, 0, 0)
-    menu.createButton("Convolve", convolve, filterCanvas, 0.25, 0.1, 0.75, 0)
+    menu.createButton("Convolve", convolveClick, filterCanvas, 0.25, 0.1, 0.75, 0)
 
     menu.createLabel("Sample Frequency:", filterCanvas, 0, 0.2, 0.1, 0.1, 0.1)
     menu.createEntry(shared.sampleFreq_var, filterCanvas, 0.6, 0.1, 0.3, 0.1)
@@ -229,7 +221,7 @@ def sampleClick():
     if shared.L_var.get() > 0:
         upsample()
     filter("low")
-    convolve()
+    convolveClick()
     if shared.M_var.get() > 0:
         downsample()
 
