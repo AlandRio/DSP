@@ -94,7 +94,7 @@ def fileExport(wave_type="original"):
     if shared.startingPos_var.get() >= min(points_x) or shared.startingPos_var.get() < max(points_x):
         i = points_x.index(shared.startingPos_var.get())
     string = f"{int(saved_points.signalType)}\n{int(saved_points.isPeriodic)}\n{int(min(saved_points.samples,shared.export_var.get()))}"
-    for x in range(min(shared.export_var.get(), saved_points.samples)):
+    for x in range(min(shared.export_var.get(), len(saved_points.x_points))):
         try:
             string = string + f"\n{int(saved_points.x_points[i+x])} {float(saved_points.y_points[i+x])}"
         except IndexError:

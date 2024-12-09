@@ -34,21 +34,21 @@ def SignalSamplesAreEqual(compare_type="edited"):
 
     test_failed = 0
     if len(expected_samples) != len(samples):
-        shared.line_var.set("Test case failed, your signal have different length from the expected one")
+        shared.line_var.set(f"Test case failed, different length expected/actual: {len(expected_samples)}/{len(samples)}")
         if test_failed == 0:
-            print("Test case failed, your signal have different values from the expected one1")
+            print(f"Test case failed, your signal have different length {len(expected_samples)}/{len(samples)}")
         test_failed = 1
     for i in range(len(expected_samples)):
         try:
             if abs(samples[i] - expected_samples[i]) < 0.01:
                 continue
             else:
-                shared.line_var.set("Test case failed, your signal have different values from the expected one")
+                shared.line_var.set(f"your signal have different values from the expected one actual/expected: {i}/{samples[i]}")
                 if test_failed == 0:
-                    print("Test case failed, your signal have different values from the expected one2")
+                    print(f"your signal have different values from the expected one actual/expected: {i}/{samples[i]}")
                 test_failed = 1
         except IndexError:
-            shared.line_var.set("Test case failed, your signal have different values from the expected one")
+            shared.line_var.set("Index Error your signal have different values from the expected one")
             if test_failed == 0:
                 print("Test case failed, your signal have different values from the expected one2")
             test_failed = 1

@@ -213,7 +213,7 @@ def DCTMenu():
 
 
 def convertMenuClick():
-    compareCanvas = menu.createCanvas(shared.root, 0.5, 0.5, 0, 0.5)
+    compareCanvas = menu.createCanvas(shared.root, 0.5, 0.45, 0, 0.55)
     menu.createLabel("Convert:", compareCanvas, 1, 0.25, 0.1, 0, 0)
 
     menu.createButton("DFT", DFTMenu, compareCanvas, 0.1, 0.1, 0.4, 0)

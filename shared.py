@@ -14,6 +14,8 @@ firstFreq_var = tk.DoubleVar()
 secondFreq_var = tk.DoubleVar()
 stopAtten_var = tk.IntVar()
 transBand_var = tk.DoubleVar()
+L_var = tk.IntVar()
+M_var = tk.IntVar()
 
 type_var = tk.StringVar()
 dark_var = tk.StringVar()
